@@ -61,14 +61,30 @@ plotem
 h.query_mission_list()
 table.colnames
 table.show_in_browser(jsviewer=True)
-
 '''
+
+def mjd2year(times):    #Converts mjd time to decimal years
+    return Time(times, format='mjd').decimalyear
+
 
 h = Heasarc()
 
+
+
 object_name = 'NGC1313'
-missions = ['SWUVOTSSOB', 'xmmssc']
-mission = 'SWUVOTSSOB'
+
+mission = 'xmmssc'
+mission2 = 'SWUVOTSSOB'
 
 table = h.query_object(object_name, mission=mission, fields='All')
+table2 = h.query_object(object_name, mission=mission2, fields='All')
 
+plt.title(object_name)
+plt.xlabel('TIME')
+
+plt.scatter(mjd2year(np.array(table['TIME'])), 
+            np.zeros(len(np.array(table['TIME']))), marker='x', label=mission)
+
+plt.scatter(mjd2year(np.array(table2['TIME'])), 
+            np.zeros(len(np.array(table2['TIME']))), marker='x', label=mission2)
+plt.legend()
