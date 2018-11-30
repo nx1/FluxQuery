@@ -27,7 +27,7 @@ Desired Mission(s)
 
 get start time column:
     XMM-DR8:'TIME'
-    swuvotssc: TIME
+    SWUVOTSSOB: 'TIME' (UT)
     
 get fluxes in hard and soft
     XMM-DR8:    
@@ -40,7 +40,7 @@ get fluxes in hard and soft
             + ['PN_4_FLUX'] 2.0-4.5
             + ['PN_5_FLUX'] 4.5-12.0
                              
-    swuvotssc:
+    SWUVOTSSOB:
 get hardness ratio in hard and soft
     XMM-DR8:    
         soft: 
@@ -50,7 +50,7 @@ get hardness ratio in hard and soft
             + ['PN_HR3']    1.0-2.0 and 2.0-4.5
             + ['PN_HR4']    2.0-4.5 and 4.5-12.0
                 
-    swuvotssc:
+    SWUVOTSSOB:
 
 plotem
 
