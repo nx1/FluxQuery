@@ -66,25 +66,38 @@ table.show_in_browser(jsviewer=True)
 def mjd2year(times):    #Converts mjd time to decimal years
     return Time(times, format='mjd').decimalyear
 
-
 h = Heasarc()
-
-
 
 object_name = 'NGC1313'
 
-mission = 'xmmssc'
-mission2 = 'SWUVOTSSOB'
+mission = 'xmmssc'          #XMM
+mission2 = 'SWUVOTSSOB'     #Swift
+mission3 = 'NUMASTER'       #NuSTAR
+mission4 = 'CHANMASTER'     #Chandra
+mission5 = 'RASS2RXS'       #ROSAT
+#mission6 = 'FERMIGDAYS'      #Fermi
 
 table = h.query_object(object_name, mission=mission, fields='All')
 table2 = h.query_object(object_name, mission=mission2, fields='All')
+table3 = h.query_object(object_name, mission=mission3, fields='All')
+table4 = h.query_object(object_name, mission=mission4, fields='All')
+table5 = h.query_object(object_name, mission=mission5, fields='All')
+#table6 = h.query_object(object_name, mission=mission6, fields='All')
 
-plt.title(object_name)
-plt.xlabel('TIME')
 
 plt.scatter(mjd2year(np.array(table['TIME'])), 
             np.zeros(len(np.array(table['TIME']))), marker='x', label=mission)
-
 plt.scatter(mjd2year(np.array(table2['TIME'])), 
             np.zeros(len(np.array(table2['TIME']))), marker='x', label=mission2)
+plt.scatter(mjd2year(np.array(table3['TIME'])), 
+            np.zeros(len(np.array(table3['TIME']))), marker='x', label=mission3)
+plt.scatter(mjd2year(np.array(table4['TIME'])), 
+            np.zeros(len(np.array(table4['TIME']))), marker='x', label=mission4)
+plt.scatter(mjd2year(np.array(table5['TIME'])), 
+            np.zeros(len(np.array(table5['TIME']))), marker='x', label=mission5)
+#plt.scatter(mjd2year(np.array(table6['TIME'])), 
+            #np.zeros(len(np.array(table6['TIME']))), marker='x', label=mission6)
+
+plt.title(object_name)
+plt.xlabel('TIME')
 plt.legend()
