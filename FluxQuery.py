@@ -68,35 +68,52 @@ def mjd2year(times):    #Converts mjd time to decimal years
 
 h = Heasarc()
 
-object_name = 'NGC1313'
+object_name = 'NGC6946'
 
-mission = 'xmmssc'          #XMM
-mission2 = 'SWUVOTSSOB'     #Swift
-mission3 = 'NUMASTER'       #NuSTAR
-mission4 = 'CHANMASTER'     #Chandra
-mission5 = 'RASS2RXS'       #ROSAT
-#mission6 = 'FERMIGDAYS'      #Fermi
-
-table = h.query_object(object_name, mission=mission, fields='All')
-table2 = h.query_object(object_name, mission=mission2, fields='All')
-table3 = h.query_object(object_name, mission=mission3, fields='All')
-table4 = h.query_object(object_name, mission=mission4, fields='All')
-table5 = h.query_object(object_name, mission=mission5, fields='All')
-#table6 = h.query_object(object_name, mission=mission6, fields='All')
+mission1 = ['xmmssc', 'XMM']        #XMM
+mission2 = ['SWUVOTSSOB', 'Swift']  #Swift
+mission3 = ['NUMASTER', 'NuSTAR']   #NuSTAR
+mission4 = ['CHANMASTER', 'Chandra']#Chandra
+mission5 = ['RASS2RXS', 'ROSAT']    #ROSAT
+mission6 = ['fermilasp', 'Fermi']   #Fermi
+mission7 = ['mpcraw', 'Einstein']   #Einstien
+mission8 = ['suzaxislog', 'SUZAKU'] #SUZAKU
 
 
-plt.scatter(mjd2year(np.array(table['TIME'])), 
-            np.zeros(len(np.array(table['TIME']))), marker='x', label=mission)
-plt.scatter(mjd2year(np.array(table2['TIME'])), 
-            np.zeros(len(np.array(table2['TIME']))), marker='x', label=mission2)
-plt.scatter(mjd2year(np.array(table3['TIME'])), 
-            np.zeros(len(np.array(table3['TIME']))), marker='x', label=mission3)
-plt.scatter(mjd2year(np.array(table4['TIME'])), 
-            np.zeros(len(np.array(table4['TIME']))), marker='x', label=mission4)
-plt.scatter(mjd2year(np.array(table5['TIME'])), 
-            np.zeros(len(np.array(table5['TIME']))), marker='x', label=mission5)
-#plt.scatter(mjd2year(np.array(table6['TIME'])), 
-            #np.zeros(len(np.array(table6['TIME']))), marker='x', label=mission6)
+
+
+try: 
+    table1 = h.query_object(object_name, mission=mission1[0], fields='All')
+    table2 = h.query_object(object_name, mission=mission2[0], fields='All')
+    table3 = h.query_object(object_name, mission=mission3[0], fields='All')
+    table4 = h.query_object(object_name, mission=mission4[0], fields='All')
+    table5 = h.query_object(object_name, mission=mission5[0], fields='All')
+    table6 = h.query_object(object_name, mission=mission6[0], fields='All')
+    table7 = h.query_object(object_name, mission=mission7[0], fields='All')
+    table8 = h.query_object(object_name, mission=mission8[0], fields='All')
+except TypeError:
+    pass
+
+
+try:
+    plt.scatter(mjd2year(np.array(table1['TIME'])), 
+                np.zeros(len(np.array(table1['TIME']))), marker='x', label=mission1[1])
+    plt.scatter(mjd2year(np.array(table2['TIME'])), 
+                np.zeros(len(np.array(table2['TIME']))), marker='x', label=mission2[1])
+    plt.scatter(mjd2year(np.array(table3['TIME'])), 
+                np.zeros(len(np.array(table3['TIME']))), marker='x', label=mission3[1])
+    plt.scatter(mjd2year(np.array(table4['TIME'])), 
+                np.zeros(len(np.array(table4['TIME']))), marker='x', label=mission4[1])
+    plt.scatter(mjd2year(np.array(table5['TIME'])), 
+                np.zeros(len(np.array(table5['TIME']))), marker='x', label=mission5[1])
+    plt.scatter(mjd2year(np.array(table6['TIME'])), 
+                np.zeros(len(np.array(table6['TIME']))), marker='x', label=mission6[1])
+    plt.scatter(mjd2year(np.array(table7['START_TIME'])), 
+                np.zeros(len(np.array(table7['START_TIME']))), marker='x', label=mission7[1])      
+    plt.scatter(mjd2year(np.array(table8['TIME'])), 
+                np.zeros(len(np.array(table8['TIME']))), marker='x', label=mission8[1])  
+except NameError:
+    pass
 
 plt.title(object_name)
 plt.xlabel('TIME')
