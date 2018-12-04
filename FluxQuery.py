@@ -71,7 +71,7 @@ h = Heasarc()
 object_name = 'NGC6946'
 
 mission1 = ['xmmssc', 'XMM']        #XMM
-mission2 = ['SWUVOTSSOB', 'Swift']  #Swift
+mission2 = ['swiftmastr', 'Swift']  #Swift
 mission3 = ['NUMASTER', 'NuSTAR']   #NuSTAR
 mission4 = ['CHANMASTER', 'Chandra']#Chandra
 mission5 = ['RASS2RXS', 'ROSAT']    #ROSAT
@@ -93,11 +93,15 @@ try:
     table8 = h.query_object(object_name, mission=mission8[0], fields='All')
 except TypeError:
     pass
-
+######################XMM FLUXES#######################
+    
+softPN = np.asarray(table1['PN_1_FLUX'] + table1['PN_2_FLUX'])
+hardPN = np.asarray(table1['PN_3_FLUX'] + table1['PN_4_FLUX'] + table1['PN_5_FLUX'])
 
 try:
-    plt.scatter(mjd2year(np.array(table1['TIME'])), 
-                np.zeros(len(np.array(table1['TIME']))), marker='x', label=mission1[1])
+    plt.scatter(mjd2year(np.array(table1['TIME'])), softPN, 
+                marker='x', label=mission1[1])
+    
     plt.scatter(mjd2year(np.array(table2['TIME'])), 
                 np.zeros(len(np.array(table2['TIME']))), marker='x', label=mission2[1])
     plt.scatter(mjd2year(np.array(table3['TIME'])), 
@@ -115,6 +119,8 @@ try:
 except NameError:
     pass
 
+plt.ylim(0,1.1*np.nanmax(softPN))
 plt.title(object_name)
 plt.xlabel('TIME')
+plt.ylabel('Flux $$')
 plt.legend()
