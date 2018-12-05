@@ -30,28 +30,9 @@ get start time column:
     SWUVOTSSOB: 'TIME' (UT)
     
 get fluxes in hard and soft
-    XMM-DR8:    
-        soft: 
-            ['PN_1_FLUX]    0.2-0.5
-            + ['PN_2_FLUX'] 0.5-1.0
-                        
-        hard:
-            ['PN_3_FLUX]    1.0-2.0  
-            + ['PN_4_FLUX'] 2.0-4.5
-            + ['PN_5_FLUX'] 4.5-12.0
-                             
-    SWUVOTSSOB:
+    REFER TO EXCEL FILE
 get hardness ratio in hard and soft
-    XMM-DR8:    
-        soft: 
-            ['PN_HR1']      0.2 - 0.5 and 0.5 - 1.0
-        hard:
-            ['PN_HR2']      0.5-1.0 and 1.0-2.0
-            + ['PN_HR3']    1.0-2.0 and 2.0-4.5
-            + ['PN_HR4']    2.0-4.5 and 4.5-12.0
-                
-    SWUVOTSSOB:
-
+    REFER TO EXCEL FILE
 plotem
 
 '''
