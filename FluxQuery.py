@@ -49,7 +49,7 @@ def mjd2year(times):    #Converts mjd time to decimal years
 
 h = Heasarc()
 
-object_name = 'ngc5402'
+object_name = 'ngc1313'
 
 mission1 = ['xmmssc', 'XMM']        #XMM
 mission2 = ['swiftmastr', 'Swift']  #Swift
