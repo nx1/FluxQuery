@@ -59,6 +59,7 @@ mission5 = ['RASS2RXS', 'ROSAT']    #ROSAT
 mission6 = ['fermilasp', 'Fermi']   #Fermi
 mission7 = ['mpcraw', 'Einstein']   #Einstien
 mission8 = ['suzaxislog', 'SUZAKU'] #SUZAKU
+mission9 = ['nicermastr', 'NICER'] #SUZAKU
 
 
 
@@ -72,6 +73,7 @@ try:
     table6 = h.query_object(object_name, mission=mission6[0], fields='All')
     table7 = h.query_object(object_name, mission=mission7[0], fields='All')
     table8 = h.query_object(object_name, mission=mission8[0], fields='All')
+    table9 = h.query_object(object_name, mission=mission9[0], fields='All')
 except TypeError:
     pass
 
@@ -85,9 +87,11 @@ ROS_CR = np.asarray(table5['COUNT_RATE'])
 try:
     plt.scatter(mjd2year(np.array(table1['TIME'])), softPN, 
                 marker='x', label=mission1[1]+' soft')
+ 
+    
     plt.scatter(mjd2year(np.array(table1['TIME'])), hardPN, 
                 marker='x', label=mission1[1]+' hard')
-
+    
     plt.scatter(mjd2year(np.array(table2['START_TIME'])), 
                 np.zeros(len(np.array(table2['START_TIME']))), marker='x', label=mission2[1])
     
@@ -108,8 +112,12 @@ try:
      
     plt.scatter(mjd2year(np.array(table8['TIME'])), 
                 np.zeros(len(np.array(table8['TIME']))), marker='x', label=mission8[1])  
+    
+    plt.scatter(mjd2year(np.array(table9['TIME'])), 
+                np.zeros(len(np.array(table9['TIME']))), marker='x', label=mission9[1])  
 except NameError:
-    pass
+    pass   
+
 
 plt.ylim(0,1.1*np.nanmax(np.concatenate((softPN, hardPN))))
 

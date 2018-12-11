@@ -9,6 +9,8 @@ from astroquery.heasarc import Heasarc
 import numpy as np
 import urllib.request
 import os
+import gzip
+import shutil
 
 
 
@@ -56,7 +58,31 @@ def DownloadEventFiles(observations):
             pass
     
     print('Total Downloaded:', len(observations) - counter, '/', len(observations))
+
+
+def UnzipAndRemove(sourceName):
+    '''
+    Unzips all gz files in directory if given sourcename and then removes 
+    associated .gz files
+    '''
+    listDir = os.listdir(sourceName)
+    for i in listDir:
+        with gzip.open('%s/%s' % (sourceName, i), 'rb') as f_in:
+            with open('%s/%s' % (sourceName, i[:-3]), 'wb') as f_out:
+                shutil.copyfileobj(f_in, f_out)
+        os.remove('%s/%s' % (sourceName, i))
         
-    
-observations = GetObsIDs(sourceName, mission)
-DownloadEventFiles(observations)
+def CreateListFile(sourceName):
+    '''
+    Creates list file of all event files in directory for use in Xselect
+    '''
+    listDir = os.listdir(sourceName)
+    f = open("%s/file.ls" % sourceName,"w+")
+    for i in listDir:
+         f.write(i +'\n')
+    f.close() 
+        
+obs=GetObsIDs(sourceName, mission)
+DownloadEventFiles(obs)
+UnzipAndRemove(sourceName)
+CreateListFile(sourceName)
