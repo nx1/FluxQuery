@@ -49,7 +49,7 @@ def mjd2year(times):    #Converts mjd time to decimal years
 
 h = Heasarc()
 
-object_name = 'ngc1313'
+object_name = 'NGC1313'
 
 '''
 Missions with time given as ['TIME']:
@@ -58,6 +58,7 @@ Missions with time given as ['START_TIME']:
     swiftmastr, mpcraw
 '''
 
+#Dictionary for storing missions
 M = {
      'XMM': 'xmmssc', 
      'Swift': 'swiftmastr', 
@@ -68,18 +69,19 @@ M = {
      'Einstein': 'mpcraw', 
      'SUZAKU': 'suzaxislog', 
      'NICER': 'nicermastr', 
-     }  #Dictionary for storing missions
+     'SWIFTUV': 'swuvotssob',
+     }  
 
 T = {}  #Dictonary for storing table from queries
 
-for i in M:
+for i in M: #Running through mission dictionary and obtaining associated tables
     try:
         T[i] = h.query_object(object_name, mission=M[i], fields='All')
-    except TypeError:
+    except TypeError:   #Exception if there are no found observations
         print('TypeError:', i, '| probably due to no observation of source')
         pass
     
-for i in T:
+for i in T: #Running through tables to plot 
     try:
         if i == 'XMM':
             softPN = np.asarray(T[i]['PN_1_FLUX'] + T[i]['PN_2_FLUX'])
