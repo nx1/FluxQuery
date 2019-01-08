@@ -4,6 +4,8 @@
 Created on Tue Nov 27 11:55:54 2018
 
 @author: nk7g14
+FluxQuery is an attempt to provide long term x-ray light curves for a given
+source by querying a veriety of x-ray missions, historical and current.
 """
 
 import pandas as pd
@@ -44,8 +46,8 @@ table.colnames
 table.show_in_browser(jsviewer=True)
 '''
 
-def mjd2year(times):    #Converts mjd time to decimal years
-    return Time(times, format='mjd').decimalyear
+#Converts mjd time to decimal years
+mjd2year = lambda times: Time(times, format='mjd').decimalyear
 
 h = Heasarc()
 

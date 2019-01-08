@@ -1,0 +1,48 @@
+Navigate to Desired folder eg "cd NGC300"
+
+>xselect
+session name = [anything] might be good to call it NGC300_DATE
+
+>read event "@file.ls"
+event file dir [./]
+reset mission = yes
+
+> extract image
+> save image image.img
+	USE DS9 TO CREATE SRC AND BKG files
+		format: DS9
+		Coord system fk5 or sometimes physical (ask matt)
+> filter region src.reg
+> extract curve
+> save curve src.lc
+> clear region
+> filter region bkg.reg
+> extract curve
+> save curve bkg.lc
+> EXIT
+> save session yes/no
+
+
+> lcmath
+input = src.lc
+background = bkg.lc
+output = new_src.lc
+scaling factor 1:1 if source and bkg are same size which is not a bad shout
+add instead of subtract? >no
+
+>lcurve
+number of time series for this task
+filename [new_src.lc]
+name of the window file [-]
+newbin time or negative rebinning [INDEF]
+Number of newbins/Interval [INDEF]
+name of output file [output.lc]
+would you like to plot your results [no]
+
+
+
+
+INDEF
+INDEF
+INDEF
+output.lc

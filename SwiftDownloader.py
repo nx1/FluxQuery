@@ -4,6 +4,11 @@
 Created on Fri Dec  7 13:56:29 2018
 
 @author: nk7g14
+Downloads, unzips and then creates a list file for use in Xspec for a given
+source name and mission.
+
+The event cleaned event files are downloaded from: 
+    http://www.swift.ac.uk/archive/
 """
 from astroquery.heasarc import Heasarc
 import numpy as np
@@ -12,15 +17,10 @@ import os
 import gzip
 import shutil
 
-
-
 h = Heasarc()
 
-
-sourceName = 'NGC300'
+sourceName = 'NGC1313'
 mission = 'swiftmastr'
-
-
 
 
 def GetObsIDs(sourceName, mission):
@@ -33,56 +33,79 @@ def GetObsIDs(sourceName, mission):
     return obsIDs
 
 
-def DownloadEventFiles(observations):
+def CreateDir(Target):
+    try:
+        os.mkdir(Target)
+        print("Directory", Target, " Created")
+    except FileExistsError:
+        print("Directory", Target, " already exists")
+        
+def FetchFile(url, saveLoc):
+    try:
+        urllib.request.urlretrieve(url, saveLoc)
+    except urllib.error.HTTPError:
+        print('could not find:', url)
+        pass
+        
+    
+def DownloadEventFiles(observations, xrt=True, uvot=True):
     '''
     Downloads (level 2) Screened event files for given list of observation IDs
     '''
     cwd = os.getcwd()   #Current Working Directory
 
-    try:
-        # Create target Directory
-        os.mkdir(sourceName)
-        print("Directory " , sourceName ,  " Created ") 
-    except FileExistsError:
-        print("Directory " , sourceName ,  " already exists")
-    
-    
-    counter = 0
     for i in observations:
-        try:
-            url = 'http://www.swift.ac.uk/archive/reproc/%s/xrt/event/sw%sxpcw3po_cl.evt.gz' % (i,i)
-            urllib.request.urlretrieve(url, '%s/%s/sw%sxpcw3po_cl.evt.gz' % (cwd ,sourceName, i))
-        except urllib.error.HTTPError:
-            print('could not find:', i)
-            counter += 1
-            pass
-    
-    print('Total Downloaded:', len(observations) - counter, '/', len(observations))
+        FetchFile('http://www.swift.ac.uk/archive/reproc/%s/xrt/event/sw%sxpcw3po_cl.evt.gz' % (i,i),
+                  '%s/%s/xrt/sw%sxpcw3po_cl.evt.gz' % (cwd, sourceName, i))
+        
+        FetchFile('http://www.swift.ac.uk/archive/reproc/%s/uvot/products/sw%su.cat.gz' % (i,i),
+                  '%s/%s/uvot/cat/sw%su.cat.gz' % (cwd, sourceName, i))
 
-
-def UnzipAndRemove(sourceName):
+        FetchFile('http://www.swift.ac.uk/archive/reproc/%s/uvot/image/sw%suuu_rw.img.gz' % (i,i),
+                  '%s/%s/uvot/img/sw%suuu_rw.img.gz' % (cwd, sourceName, i))
+        
+        FetchFile('http://www.swift.ac.uk/archive/reproc/%s/uvot/image/sw%suuu_sk.img.gz' % (i,i),
+                  '%s/%s/uvot/img/sw%suuu_sk.img.gz' % (cwd, sourceName, i))
+        
+def UnzipAndRemove(path):
     '''
-    Unzips all gz files in directory if given sourcename and then removes 
+    Unzips all gz files in directory if given path and then removes 
     associated .gz files
     '''
-    listDir = os.listdir(sourceName)
+    listDir = os.listdir(path)
     for i in listDir:
-        with gzip.open('%s/%s' % (sourceName, i), 'rb') as f_in:
-            with open('%s/%s' % (sourceName, i[:-3]), 'wb') as f_out:
+        with gzip.open('%s/%s' % (path, i), 'rb') as f_in:
+            with open('%s/%s' % (path, i[:-3]), 'wb') as f_out:
                 shutil.copyfileobj(f_in, f_out)
-        os.remove('%s/%s' % (sourceName, i))
+        os.remove('%s/%s' % (path, i))
+    
         
-def CreateListFile(sourceName):
+def CreateListFile(path):
     '''
     Creates list file of all event files in directory for use in Xselect
     '''
-    listDir = os.listdir(sourceName)
-    f = open("%s/file.ls" % sourceName,"w+")
+    listDir = os.listdir(path)
+    f = open("%s/file.ls" % path,"w+")
     for i in listDir:
          f.write(i +'\n')
-    f.close() 
-        
+    f.close()
+      
+    
+    
 obs=GetObsIDs(sourceName, mission)
+
+CreateDir(sourceName)
+CreateDir('%s/xrt' %(sourceName))
+CreateDir('%s/uvot' %(sourceName))
+CreateDir('%s/uvot/img' %(sourceName))
+CreateDir('%s/uvot/cat' %(sourceName))
+    
 DownloadEventFiles(obs)
-UnzipAndRemove(sourceName)
-CreateListFile(sourceName)
+
+UnzipAndRemove('%s/xrt' %sourceName)
+UnzipAndRemove('%s/uvot/img' %sourceName)
+UnzipAndRemove('%s/uvot/cat' %sourceName)
+
+CreateListFile('%s/xrt' %(sourceName))
+CreateListFile('%s/uvot/img' %sourceName)
+CreateListFile('%s/uvot/cat' %sourceName)
