@@ -32,7 +32,7 @@ mission = 'swiftmastr'
 
 catobsID, start = GetObsIDs(sourceName, mission)
 
-listDir = os.listdir('%s/uvot' %(sourceName))
+listDir = os.listdir('%s/uvot/cat' %(sourceName))
 
 flux=np.empty(len(listDir))
 fluxErr=np.empty(len(listDir))
@@ -45,7 +45,7 @@ for i, j in zip(listDir, range(len(listDir))):
     print(j, '/', len(listDir))
     obsID.append(i[2:-5])
     print('opening file:', i, 'obsID:', obsID[j])
-    data=fits.open('%s/uvot/%s' %(sourceName, i))
+    data=fits.open('%s/uvot/cat/%s' %(sourceName, i))
     flux[j] = np.mean(data[1].data['FLUX'])
     fluxErr[j] = np.mean(data[1].data['FLUX_ERR'])
     print('Found Fluxes:', flux[j])

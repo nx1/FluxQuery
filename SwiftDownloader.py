@@ -61,11 +61,12 @@ def DownloadEventFiles(observations, xrt=True, uvot=True):
         FetchFile('http://www.swift.ac.uk/archive/reproc/%s/uvot/products/sw%su.cat.gz' % (i,i),
                   '%s/%s/uvot/cat/sw%su.cat.gz' % (cwd, sourceName, i))
 
-        FetchFile('http://www.swift.ac.uk/archive/reproc/%s/uvot/image/sw%suuu_rw.img.gz' % (i,i),
-                  '%s/%s/uvot/img/sw%suuu_rw.img.gz' % (cwd, sourceName, i))
-        
+       # FetchFile('http://www.swift.ac.uk/archive/reproc/%s/uvot/image/sw%suuu_rw.img.gz' % (i,i),
+       #           '%s/%s/uvot/img/sw%suuu_rw.img.gz' % (cwd, sourceName, i))
+
         FetchFile('http://www.swift.ac.uk/archive/reproc/%s/uvot/image/sw%suuu_sk.img.gz' % (i,i),
                   '%s/%s/uvot/img/sw%suuu_sk.img.gz' % (cwd, sourceName, i))
+
         
 def UnzipAndRemove(path):
     '''
