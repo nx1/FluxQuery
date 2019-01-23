@@ -4,6 +4,11 @@
 Created on Mon Jan  7 15:00:41 2019
 
 @author: nk7g14
+SwiftUVOTPlotter.py
+Plots the long term light curve for a given source from the UVOT telescope.
+
+Does this by obtaining start times from observation IDS by catalouge query
+then obtains flux from output of "uvotsource" command for each ID.
 """
 
 from astropy.io import fits

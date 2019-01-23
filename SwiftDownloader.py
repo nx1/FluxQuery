@@ -55,17 +55,18 @@ def DownloadEventFiles(observations, xrt=True, uvot=True):
     cwd = os.getcwd()   #Current Working Directory
 
     for i in observations:
-        FetchFile('http://www.swift.ac.uk/archive/reproc/%s/xrt/event/sw%sxpcw3po_cl.evt.gz' % (i,i),
-                  '%s/%s/xrt/sw%sxpcw3po_cl.evt.gz' % (cwd, sourceName, i))
-        
-        FetchFile('http://www.swift.ac.uk/archive/reproc/%s/uvot/products/sw%su.cat.gz' % (i,i),
-                  '%s/%s/uvot/cat/sw%su.cat.gz' % (cwd, sourceName, i))
-
+        if xrt==True:
+            FetchFile('http://www.swift.ac.uk/archive/reproc/%s/xrt/event/sw%sxpcw3po_cl.evt.gz' % (i,i),
+                      '%s/%s/xrt/sw%sxpcw3po_cl.evt.gz' % (cwd, sourceName, i))
+        if uvot==True:
+            FetchFile('http://www.swift.ac.uk/archive/reproc/%s/uvot/products/sw%su.cat.gz' % (i,i),
+                      '%s/%s/uvot/cat/sw%su.cat.gz' % (cwd, sourceName, i))
+            FetchFile('http://www.swift.ac.uk/archive/reproc/%s/uvot/image/sw%suuu_sk.img.gz' % (i,i),
+                      '%s/%s/uvot/img/sw%suuu_sk.img.gz' % (cwd, sourceName, i))
        # FetchFile('http://www.swift.ac.uk/archive/reproc/%s/uvot/image/sw%suuu_rw.img.gz' % (i,i),
        #           '%s/%s/uvot/img/sw%suuu_rw.img.gz' % (cwd, sourceName, i))
 
-        FetchFile('http://www.swift.ac.uk/archive/reproc/%s/uvot/image/sw%suuu_sk.img.gz' % (i,i),
-                  '%s/%s/uvot/img/sw%suuu_sk.img.gz' % (cwd, sourceName, i))
+
 
         
 def UnzipAndRemove(path):
