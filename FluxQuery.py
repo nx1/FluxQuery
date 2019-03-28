@@ -5,15 +5,13 @@ Created on Tue Nov 27 11:55:54 2018
 
 @author: nk7g14
 FluxQuery is an attempt to provide long term x-ray light curves for a given
-source by querying a veriety of x-ray missions, historical and current.
+source by querying a variety of x-ray missions, historical and current.
 """
 
-import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import figure
 from astropy.time import Time
-import os
 from astroquery.heasarc import Heasarc
 
 '''
