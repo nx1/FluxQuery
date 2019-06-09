@@ -39,25 +39,23 @@ Missions with time given as ['TIME']:
     xmmssc, NUMASTER, CHANMASTER, RASS2RXS, fermilasp, suzaxislog, nicermastr
 Missions with time given as ['START_TIME']:
     swiftmastr, mpcraw
+    
+M = {
+ 'XMM': 'xmmssc', 
+ 'Swift': 'swiftmastr', 
+ 'NuSTAR': 'NUMASTER', 
+ 'Chandra': 'CHANMASTER', 
+ 'ROSAT': 'RASS2RXS', 
+ 'Fermi': 'fermilasp', 
+ 'Einstein': 'mpcraw', 
+ 'SUZAKU': 'suzaxislog', 
+ 'NICER': 'nicermastr', 
+ 'SWIFTUV': 'swuvotssob',
+ }
 '''
-
 
 import xmm
 import swift
-
-#Dictionary for storing missions
-M = {
-     'XMM': 'xmmssc', 
-     'Swift': 'swiftmastr', 
-     'NuSTAR': 'NUMASTER', 
-     'Chandra': 'CHANMASTER', 
-     'ROSAT': 'RASS2RXS', 
-     'Fermi': 'fermilasp', 
-     'Einstein': 'mpcraw', 
-     'SUZAKU': 'suzaxislog', 
-     'NICER': 'nicermastr', 
-     'SWIFTUV': 'swuvotssob',
-     }
 
 source_name = 'NGC1313'
 

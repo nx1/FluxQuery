@@ -16,6 +16,7 @@ import gzip
 
 
 mjd2year = lambda times: Time(times, format='mjd').decimalyear
+s2year = lambda times: times/60/60/24/365.25
 
 def PlotStartAndEndTimes(start_end):
     '''
@@ -37,6 +38,8 @@ def CreateDir(path):
         print("Directory", path, " Created")
     except FileExistsError:
         print("Directory", path, " already exists")
+    except FileNotFoundError:
+        print('FileNotFoundError, parhaps illegal characters in name?')
         
 def FetchFile(url, path):
     '''

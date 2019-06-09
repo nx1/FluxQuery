@@ -39,10 +39,10 @@ def DownloadEventFiles(observations, xrt=True, uvot=True):
 
 def CreateSaveDirectories():
     aux.CreateDir(source_name)
-    aux.CreateDir('%s/xrt' %(source_name))
-    aux.CreateDir('%s/uvot' %(source_name))
-    aux.CreateDir('%s/uvot/img' %(source_name))
-    aux.CreateDir('%s/uvot/cat' %(source_name))
+    aux.CreateDir('{}/xrt'.format(source_name))
+    aux.CreateDir('{}/uvot'.format(source_name))
+    aux.CreateDir('{}/uvot/img'.format(source_name))
+    aux.CreateDir('{}/uvot/cat'.format(source_name))
 
 def CleanUpgzFiles():
     aux.UnzipAndRemoveAllgzFiles('{}/xrt'.format(source_name))
