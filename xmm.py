@@ -8,7 +8,7 @@ Created on Thu Jun  6 12:22:30 2019
 import pandas as pd
 import numpy as np
 from astroquery.heasarc import Heasarc
-
+import logging
 import auxil as aux
 
 h = Heasarc()
@@ -18,7 +18,7 @@ def GetObservationListXMM(object_name):
         obs_list = h.query_object(object_name, mission='xmmssc', fields='All')
         return obs_list
     except:
-        print('Failed to get XMM observation list')
+        logging.debug('Failed to get XMM observation list')
 
 def GetStartAndEndTimesXMM(observation_list):
     start_time = np.array(observation_list['TIME'])

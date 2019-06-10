@@ -13,7 +13,10 @@ import shutil
 import glob
 from astropy.time import Time
 import gzip
+import tarfile
+import logging
 
+logging.basicConfig(level=logging.DEBUG, format=' %(asctime)s -- %(message)s')
 
 mjd2year = lambda times: Time(times, format='mjd').decimalyear
 s2year = lambda times: times/60/60/24/365.25
@@ -35,11 +38,11 @@ def CreateDir(path):
     '''
     try:
         os.mkdir(path)
-        print("Directory", path, " Created")
+        logging.debug("Directory", path, " Created")
     except FileExistsError:
-        print("Directory", path, " already exists")
+        logging.debug("Directory", path, " already exists")
     except FileNotFoundError:
-        print('FileNotFoundError, parhaps illegal characters in name?')
+        logging.debug('FileNotFoundError, parhaps illegal characters in name?')
         
 def FetchFile(url, path):
     '''
@@ -49,7 +52,7 @@ def FetchFile(url, path):
     try:
         urllib.request.urlretrieve(url, path)
     except urllib.error.HTTPError:
-        print('could not find:', url)
+        logging.debug('could not find:', url)
         pass
     
 def UnzipAllgzFiles(path):
@@ -73,7 +76,33 @@ def RemoveAllgzFiles(path):
 def UnzipAndRemoveAllgzFiles(path):
     UnzipAllgzFiles(path)
     RemoveAllgzFiles(path)
+    
+def UnzipalltarFiles(path):
+    cwd = os.getcwd()
+    os.chdir(path)
+    tar_files = glob.glob('*.tar')
+    for file in tar_files:
+        logging.debug(file)
+        file = tarfile.open(name=file, mode='r')
+        file.extractall()
+        file.close()
+    os.chdir(cwd)
 
+def RemoveAlltarFiles(path):
+    '''
+    Removes all tar files in a given path
+    '''
+    cwd = os.getcwd()
+    os.chdir(path)
+    tar_files = glob.glob('*.tar')
+    for file in tar_files:
+        os.remove(file)
+    os.chdir(cwd)
+    
+def UnzipAndRemoveAlltarFiles(path):
+    UnzipalltarFiles(path)
+    RemoveAlltarFiles(path)
+    
 def CreateEventListFile(path):
     '''
     Creates list file of all event files .evt in directory for use in Xselect

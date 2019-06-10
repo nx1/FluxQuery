@@ -56,7 +56,7 @@ M = {
 
 import xmm
 import swift
-
+import logging
 source_name = 'NGC1313'
 
 xmm.XMMComplete(source_name)

@@ -5,35 +5,172 @@ Created on Fri Jun  7 14:41:30 2019
 
 @author: nk7g14
 """
-import os
-
+import pandas as pd
 import auxil as aux
+import os
 import requests
+from astroquery.heasarc import Heasarc
+import logging
+import re
+from astropy.io import fits
+import numpy as np
+from pathlib import Path
+
+logging.basicConfig(level=logging.DEBUG, format=' %(asctime)s -- %(message)s')
+h = Heasarc()
 
 def GetObservationListRXTE(object_name):
     try:
         obs_list = h.query_object(object_name, mission='XTEMASTER', fields='All')
         return obs_list
     except:
-        print('Failed to get RXTE observation list')
+        logging.debug('Failed to get RXTE observation list')
 
 def CreateSaveDirectories():
-    aux.CreateDir(source_name)
-    aux.CreateDir('{}/rxte'.format(source_name))
+    aux.CreateDir('sources')
+    aux.CreateDir('sources/{}'.format(source_name))
+    aux.CreateDir('sources/{}/rxte'.format(source_name))
     
 def DownloadRXTEObservation(obsID, source_name):
-    #Attempt 2
-    first_bit = obsID.split('-')
-    url = 'http://heasarc.gsfc.nasa.gov/cgi-bin/W3Browse/xteTar.pl?obsid={}&prnb={}'.format(obsID, first_bit)
-    myfile = requests.get(url, allow_redirects=True)
-    cwd = os.getcwd()
-    open(cwd + '/{}/rxte/{}.tar'.format(source_name,obsID), 'wb').write(myfile.content)
+    #TODO Add progress bar
+    logging.debug('Downloading RXTE observation: {}'.format(obsID))
+    filepath = '/sources/{}/rxte/{}.tar'.format(source_name,obsID)
     
+    if Path(filepath).is_file():
+        logging.debug(filepath, 'already exists, not downloading.')
+    else:            
+        first_bit = obsID.split('-')[0]
+        url = 'http://heasarc.gsfc.nasa.gov/cgi-bin/W3Browse/xteTar.pl?obsid={}&prnb={}'.format(obsID, first_bit)
+        myfile = requests.get(url, allow_redirects=True)
+        cwd = os.getcwd()
+        open(cwd + filepath, 'wb').write(myfile.content)
 
+def GetCountsVpXPcu(xfl_file):
+    df = pd.DataFrame()
+    time = np.array(xfl_file[1].data['Time'], dtype=float)
+    count1 = np.array(xfl_file[1].data['VpX1LCntPcu0'], dtype=float)
+    count2 = np.array(xfl_file[1].data['VpX1RCntPcu0'], dtype=float)
+    count3 = np.array(xfl_file[1].data['VpX1LCntPcu1'], dtype=float)
+    count4 = np.array(xfl_file[1].data['VpX1RCntPcu1'], dtype=float)
+    count5 = np.array(xfl_file[1].data['VpX1LCntPcu2'], dtype=float)
+    count6 = np.array(xfl_file[1].data['VpX1RCntPcu2'], dtype=float)
+    count7 = np.array(xfl_file[1].data['VpX1LCntPcu3'], dtype=float)
+    count8 = np.array(xfl_file[1].data['VpX1RCntPcu3'], dtype=float)
+    count9 = np.array(xfl_file[1].data['VpX1LCntPcu4'], dtype=float)
+    count10 = np.array(xfl_file[1].data['VpX1RCntPcu4'], dtype=float)
+    
+    df['Time'] = time
+    df['VpX1LCntPcu0'] = count1
+    df['VpX1RCntPcu0'] = count2
+    df['VpX1LCntPcu1'] = count3
+    df['VpX1RCntPcu1'] = count4
+    df['VpX1LCntPcu2'] = count5
+    df['VpX1RCntPcu2'] = count6
+    df['VpX1LCntPcu3'] = count7
+    df['VpX1RCntPcu3'] = count8
+    df['VpX1LCntPcu4'] = count9
+    df['VpX1RCntPcu4'] = count10
+    return df
+
+def GetCountsQ6VPcu(xfl_file):
+    df = pd.DataFrame()
+    time = np.array(xfl_file[1].data['Time'], dtype=float)
+    count1 = np.array(xfl_file[1].data['Q6VxVpXeCntPcu0'], dtype=float)
+    count2 = np.array(xfl_file[1].data['Q6VxVpXeCntPcu1'], dtype=float)
+    count3 = np.array(xfl_file[1].data['Q6VxVpXeCntPcu2'], dtype=float)
+    count4 = np.array(xfl_file[1].data['Q6VxVpXeCntPcu3'], dtype=float)
+    count5 = np.array(xfl_file[1].data['Q6VxVpXeCntPcu4'], dtype=float)
+    
+    df['Time'] = time
+    df['Q6VxVpXeCntPcu0'] = count1
+    df['Q6VxVpXeCntPcu1'] = count2
+    df['Q6VxVpXeCntPcu2'] = count3
+    df['Q6VxVpXeCntPcu3'] = count4
+    df['Q6VxVpXeCntPcu4'] = count5
+    return df
+
+def GetCountsXPcu(xfl_file):
+    df = pd.DataFrame()
+    time = np.array(xfl_file[1].data['Time'], dtype=float)
+    count1 = np.array(xfl_file[1].data['X1LX2LCntPcu0'], dtype=float)
+    count2 = np.array(xfl_file[1].data['X1RX2RCntPcu0'], dtype=float)
+    count3 = np.array(xfl_file[1].data['X2LX2RCntPcu0'], dtype=float)
+    count4 = np.array(xfl_file[1].data['X2LX3LCntPcu0'], dtype=float)
+    count5 = np.array(xfl_file[1].data['X2RX3RCntPcu0'], dtype=float)
+    count6 = np.array(xfl_file[1].data['X3LX3RCntPcu0'], dtype=float) 
+    
+    df['Time'] = time
+    df['X1LX2LCntPcu0'] = count1
+    df['X1RX2RCntPcu0'] = count2
+    df['X2LX2RCntPcu0'] = count3
+    df['X2LX3LCntPcu0'] = count4
+    df['X2RX3RCntPcu0'] = count5
+    df['X3LX3RCntPcu0'] = count6
+    return df
+
+def GetcountsGood(xfl_file):
+    df = pd.DataFrame()
+    time = np.array(xfl_file[1].data['Time'])
+    count_good_1 = np.array(xfl_file[1].data['evXEgood_PCU0'], dtype=float)
+    count_good_2 = np.array(xfl_file[1].data['evXEgood_PCU1'], dtype=float)
+    count_good_3 = np.array(xfl_file[1].data['evXEgood_PCU2'], dtype=float)
+    count_good_4 = np.array(xfl_file[1].data['evXEgood_PCU3'], dtype=float)
+    count_good_5 = np.array(xfl_file[1].data['evXEgood_PCU4'], dtype=float)
+    
+    df['Time'] = time
+    df['evXEgood_PCU0'] = count_good_1
+    df['evXEgood_PCU1'] = count_good_2
+    df['evXEgood_PCU2'] = count_good_3
+    df['evXEgood_PCU3'] = count_good_4
+    df['evXEgood_PCU4'] = count_good_5
+    return df
+
+    
+    
+#TODO Extract .tar files
+#Navigate to extacted stdprod folder
+#extract x20186030200.xfl.gz file
+#open xfl file with fits
+
+def GetAllCounts(xfl_file):
+    countsVpX = GetCountsVpXPcu(xfl_file)
+    counts6VP = GetCountsQ6VPcu(xfl_file)
+    countsXP = GetCountsXPcu(xfl_file)
+    counts_good = GetcountsGood(xfl_file)
+    mapping = [countsVpX, counts6VP, countsXP, counts_good]
+    df = pd.concat(mapping, axis=1)
+    df = df.loc[:,~df.columns.duplicated()] #Drop duplicate time columns
+    return df
+
+
+def RXTEComplete():
+    obs_list = GetObservationListRXTE(source_name)
+    CreateSaveDirectories()
+    
+    #for observation in obs_list['OBSID']:
+    #    DownloadRXTEObservation(observation, source_name)
+    
+    aux.UnzipAndRemoveAlltarFiles('sources/{}/rxte'.format(source_name))
+    
+    walk = os.walk('sources/{}/rxte'.format(source_name))
+    obsIDregex = re.compile(r'\d{5}-\d{2}-\d{2}-\d{2}')
+
+    for walk_iter in walk:
+        if 'stdprod' in walk_iter[0]:
+            result = obsIDregex.search(walk_iter[0])
+            obsID = result.group()
+            aux.UnzipAllgzFiles(walk_iter[0])
+            xfl_search = glob.glob(walk_iter[0] + '/*.xfl')[0]
+            xfl_file = fits.open(xfl_search)
+            counts_df = GetAllCounts(xfl_file)
+            counts_df['obsID'] = obsID
+            
 source_name = 'GRS1915+105'
+RXTEComplete()
 
-obs_list = GetObservationListRXTE(source_name)
-CreateSaveDirectories()
+        
 
-for observation in obs_list:
-    DownloadRXTEObservation(observation, source_name)
+'''
+'sources/{}/rxte/{}/{}/stdprod'.format(source_name, first_bit, obsID)
+sources/GRS1915+105/rxte/P20186/20186-03-02-00/stdprod
+'''
