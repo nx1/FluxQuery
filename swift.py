@@ -4,6 +4,7 @@
 Created on Thu Jun  6 12:22:30 2019
 
 @author: nk7g14
+This file contains scripts for 'FluxQuery' for the swift telescope.
 """
 import pandas as pd
 import numpy as np
@@ -13,19 +14,28 @@ import auxil as aux
 
 h = Heasarc()
 
-def GetObservationList(object_name):
+def GetObservationList(source_name):
+    '''
+    Querys Heasarc's swiftmastr catalogue to find all entries corresponding to
+    a given source name.
+    Returns the full table with all columns
+    '''
     try:
-        obs_list = h.query_object(object_name, mission='swiftmastr', fields='All')
+        logging.debug('Querying Heasarc swiftmastr for source {}'.format(source_name))
+        obs_list = h.query_object(source_name, mission='swiftmastr', fields='All')
         return obs_list
     except:
         logging.debug('Failed to get Swift observation list')
 
-def GetObservationID(object_name):
+def GetObservationID(source_name):
     '''
-    Returns array of observation IDS for a given sourceName and Mission
-    Currently only works for missions with column name ['OBSID']
+    Queries 
     '''
-    query = h.query_object(object_name, 'swiftmastr', fields='OBSID')
+    try:
+        logging.debug('Getting OBSIDs for {}'.format(source_name))
+        query = h.query_object(source_name, 'swiftmastr', fields='OBSID')
+    except:
+        logging.debug('Failed to get Swift observation list')
     obsIDs = np.array(query['OBSID'], dtype='str')
     return obsIDs
     
@@ -61,3 +71,6 @@ def SWIFTXRTComplete(source_name):
     observation_list = GetObservationList(source_name)
     start_end = GetStartAndEndTimes(observation_list)
     aux.PlotStartAndEndTimes(start_end)
+
+source_name = 'NGC1313'
+SWIFTXRTComplete(source_name)

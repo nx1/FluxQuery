@@ -25,37 +25,43 @@ def DownloadEventFiles(observations, xrt=True, uvot=True):
     '''
     cwd = os.getcwd()   #Current Working Directory
 
-    for i in observations:
+    for obsID in observations:
         if xrt==True:
-            aux.FetchFile('http://www.swift.ac.uk/archive/reproc/%s/xrt/event/sw%sxpcw3po_cl.evt.gz' % (i,i),
-                      '%s/sources/%s/xrt/sw%sxpcw3po_cl.evt.gz' % (cwd, source_name, i))
+            url_xrt = 'http://www.swift.ac.uk/archive/reproc/{}/xrt/event/sw{}xpcw3po_cl.evt.gz'.format(obsID,obsID)
+            savedir_xrt = '{}/sources/{}/swift/xrt/sw{}xpcw3po_cl.evt.gz'.format(cwd,source_name,obsID)
+            aux.FetchFile(url_xrt, savedir_xrt)
         if uvot==True:
-            aux.FetchFile('http://www.swift.ac.uk/archive/reproc/%s/uvot/products/sw%su.cat.gz' % (i,i),
-                      '%s/sources/%s/uvot/cat/sw%su.cat.gz' % (cwd, source_name, i))
-            aux.FetchFile('http://www.swift.ac.uk/archive/reproc/%s/uvot/image/sw%suuu_sk.img.gz' % (i,i),
-                      '%s/sources/%s/uvot/img/sw%suuu_sk.img.gz' % (cwd, source_name, i))
-       # aux.FetchFile('http://www.swift.ac.uk/archive/reproc/%s/uvot/image/sw%suuu_rw.img.gz' % (i,i),
-       #           '%s/%s/uvot/img/sw%suuu_rw.img.gz' % (cwd, source_name, i))
+            url_uvot_cat = 'http://www.swift.ac.uk/archive/reproc/{}/uvot/products/sw{}u.cat.gz'.format(obsID, obsID)
+            savedir_uvot_cat = '{}/sources/{}/swift/uvot/cat/sw{}u.cat.gz'.format(cwd, source_name, obsID)
+            
+            url_uvot_img = 'http://www.swift.ac.uk/archive/reproc/{}/uvot/image/sw{}uuu_sk.img.gz'.format(obsID,obsID)
+            savedir_uvot_img = '{}/sources/{}/swift/uvot/img/sw{}uuu_sk.img.gz'.format(cwd, source_name, obsID)
+            
+            aux.FetchFile(url_uvot_cat, savedir_uvot_cat)
+            aux.FetchFile(url_uvot_img, savedir_uvot_img)
+       # aux.FetchFile('http://www.swift.ac.uk/archive/reproc/%s/uvot/image/sw%suuu_rw.img.gz' % (obsID,obsID),
+       #           '%s/%s/uvot/img/sw%suuu_rw.img.gz' % (cwd, source_name, obsID))
 
 def CreateSaveDirectories():
-    aux.CreateDir(sources)
-    aux.CreateDir('sources/{}'.format(source_name))
-    aux.CreateDir('sources/{}/xrt'.format(source_name))
-    aux.CreateDir('sources/{}/uvot'.format(source_name))
-    aux.CreateDir('sources/{}/uvot/img'.format(source_name))
-    aux.CreateDir('sources/{}/uvot/cat'.format(source_name))
+    os.mkdir('sources')
+    os.mkdir('sources/{}'.format(source_name))
+    os.mkdir('sources/{}/swift'.format(source_name))
+    os.mkdir('sources/{}/swift/xrt'.format(source_name))
+    os.mkdir('sources/{}/swift/uvot'.format(source_name))
+    os.mkdir('sources/{}/swift/uvot/img'.format(source_name))
+    os.mkdir('sources/{}/swift/uvot/cat'.format(source_name))
 
 def CleanUpgzFiles():
-    aux.UnzipAndRemoveAllgzFiles('sources/{}/xrt'.format(source_name))
-    aux.UnzipAndRemoveAllgzFiles('sources/{}/uvot/img'.format(source_name))
-    aux.UnzipAndRemoveAllgzFiles('sources/{}/uvot/cat'.format(source_name))
+    aux.UnzipAndRemoveAllgzFiles('sources/{}/swift/xrt'.format(source_name))
+    aux.UnzipAndRemoveAllgzFiles('sources/{}/swift/uvot/img'.format(source_name))
+    aux.UnzipAndRemoveAllgzFiles('sources/{}/swift/uvot/cat'.format(source_name))
 
 def Complete():
-    observation_IDs = swift.GetObservationIDSWIFT(source_name)
+    observation_IDs = swift.GetObservationID(source_name)
     CreateSaveDirectories()
     DownloadEventFiles(observation_IDs)
     CleanUpgzFiles()
-    aux.CreateEventListFile('sources/{}/xrt'.format(source_name))
+    aux.CreateEventListFile('sources/{}/swift/xrt'.format(source_name))
 
 source_name = 'NGC300'
 Complete()

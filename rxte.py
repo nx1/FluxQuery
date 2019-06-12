@@ -15,6 +15,8 @@ import re
 from astropy.io import fits
 import numpy as np
 from pathlib import Path
+import glob
+from datetime import datetime
 
 logging.basicConfig(level=logging.DEBUG, format=' %(asctime)s -- %(message)s')
 h = Heasarc()
@@ -27,9 +29,9 @@ def GetObservationListRXTE(object_name):
         logging.debug('Failed to get RXTE observation list')
 
 def CreateSaveDirectories():
-    aux.CreateDir('sources')
-    aux.CreateDir('sources/{}'.format(source_name))
-    aux.CreateDir('sources/{}/rxte'.format(source_name))
+    os.mkdir('sources')
+    os.mkdir('sources/{}'.format(source_name))
+    os.mkdir('sources/{}/rxte'.format(source_name))
     
 def DownloadRXTEObservation(obsID, source_name):
     #TODO Add progress bar
@@ -132,16 +134,44 @@ def GetcountsGood(xfl_file):
 #extract x20186030200.xfl.gz file
 #open xfl file with fits
 
-def GetAllCounts(xfl_file):
+def GetCounts(xfl_file):
+    #Tempoarily removed good counts as for some observations don't have em
     countsVpX = GetCountsVpXPcu(xfl_file)
     counts6VP = GetCountsQ6VPcu(xfl_file)
     countsXP = GetCountsXPcu(xfl_file)
-    counts_good = GetcountsGood(xfl_file)
-    mapping = [countsVpX, counts6VP, countsXP, counts_good]
+    #counts_good = GetcountsGood(xfl_file)
+    
+    #mapping = [countsVpX, counts6VP, countsXP, counts_good]
+    mapping = [countsVpX, counts6VP, countsXP]
     df = pd.concat(mapping, axis=1)
     df = df.loc[:,~df.columns.duplicated()] #Drop duplicate time columns
     return df
 
+def GetAllCounts():
+    '''
+    Runs through all stdprod folders and obtains the flux for each obsID
+    returns a dictionary containing all the flux dataframes
+    '''
+    walk = os.walk('sources/{}/rxte'.format(source_name))
+    obsIDregex = re.compile(r'\d{5}-\d{2}-\d{2}-\d{2}')
+    df_dict = {}
+    for walk_iter in walk:
+        if 'stdprod' in walk_iter[0]:
+            result = obsIDregex.search(walk_iter[0])
+            obsID = result.group()
+            logging.debug('Getting counts rxte {}'.format(obsID))
+            aux.UnzipAllgzFiles(walk_iter[0])
+            xfl_search = glob.glob(walk_iter[0] + '/*.xfl')[0]
+            xfl_file = fits.open(xfl_search)
+            count_df = GetCounts(xfl_file)
+            df_dict[obsID] = count_df
+    return df_dict
+
+def MergeDataframeDictionary(df_dict):
+    df = pd.concat(df_dict.values(), ignore_index=True)
+    df = df.sort_values(by=['Time'])
+    df = df.reset_index(drop=True)
+    return df
 
 def RXTEComplete():
     obs_list = GetObservationListRXTE(source_name)
@@ -151,26 +181,10 @@ def RXTEComplete():
     #    DownloadRXTEObservation(observation, source_name)
     
     aux.UnzipAndRemoveAlltarFiles('sources/{}/rxte'.format(source_name))
-    
-    walk = os.walk('sources/{}/rxte'.format(source_name))
-    obsIDregex = re.compile(r'\d{5}-\d{2}-\d{2}-\d{2}')
-
-    for walk_iter in walk:
-        if 'stdprod' in walk_iter[0]:
-            result = obsIDregex.search(walk_iter[0])
-            obsID = result.group()
-            aux.UnzipAllgzFiles(walk_iter[0])
-            xfl_search = glob.glob(walk_iter[0] + '/*.xfl')[0]
-            xfl_file = fits.open(xfl_search)
-            counts_df = GetAllCounts(xfl_file)
-            counts_df['obsID'] = obsID
+    df_dict = GetAllCounts()
+    df = MergeDataframeDictionary(df_dict)
+    df.plot(x='Time')
+    return df
             
-source_name = 'GRS1915+105'
-RXTEComplete()
-
-        
-
-'''
-'sources/{}/rxte/{}/{}/stdprod'.format(source_name, first_bit, obsID)
-sources/GRS1915+105/rxte/P20186/20186-03-02-00/stdprod
-'''
+# source_name = 'GRS1915+105'
+# df = RXTEComplete() 

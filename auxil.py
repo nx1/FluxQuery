@@ -31,19 +31,7 @@ def PlotStartAndEndTimes(start_end):
     for index, row in start_end.iterrows():
         plt.scatter(row['START_TIME'], 1)
         plt.hlines(1, row['START_TIME'], row['END_TIME'])
-        
-def CreateDir(path):
-    '''
-    Creates directory at desired path
-    '''
-    try:
-        os.mkdir(path)
-        logging.debug("Directory", path, " Created")
-    except FileExistsError:
-        logging.debug("Directory", path, " already exists")
-    except FileNotFoundError:
-        logging.debug('FileNotFoundError, parhaps illegal characters in name?')
-        
+             
 def FetchFile(url, path):
     '''
     retrieves the file from a given URL
