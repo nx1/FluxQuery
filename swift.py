@@ -8,11 +8,10 @@ This file contains scripts for 'FluxQuery' for the swift telescope.
 """
 import pandas as pd
 import numpy as np
-from astroquery.heasarc import Heasarc
+from astroquery.heasarc import Heasarc as h
 import logging
 import auxil as aux
 
-h = Heasarc()
 
 def GetObservationList(source_name):
     '''
@@ -29,7 +28,7 @@ def GetObservationList(source_name):
 
 def GetObservationID(source_name):
     '''
-    Queries 
+    Queries
     '''
     try:
         logging.debug('Getting OBSIDs for {}'.format(source_name))
@@ -38,7 +37,7 @@ def GetObservationID(source_name):
         logging.debug('Failed to get Swift observation list')
     obsIDs = np.array(query['OBSID'], dtype='str')
     return obsIDs
-    
+
 def GetStartTimes(observation_list):
     obsID = np.array(observation_list['OBSID'], dtype='str')
     start_time = np.array(observation_list['START_TIME'])
@@ -66,11 +65,11 @@ def GetStartAndEndTimes(observation_list):
     return start_end
 
 #TODO Find a way of getting swift-xrt fluxes.
-    
+
 def SWIFTXRTComplete(source_name):
     observation_list = GetObservationList(source_name)
     start_end = GetStartAndEndTimes(observation_list)
     aux.PlotStartAndEndTimes(start_end)
 
-source_name = 'NGC1313'
-SWIFTXRTComplete(source_name)
+# source_name = 'NGC1313'
+# SWIFTXRTComplete(source_name)

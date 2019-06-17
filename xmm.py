@@ -4,18 +4,23 @@
 Created on Thu Jun  6 12:22:30 2019
 
 @author: nk7g14
-"""
+
+Currently, this only queries objects found in the XMM-Newton Serendipitous
+Source Catalog (XMMSSC) https://heasarc.gsfc.nasa.gov/W3Browse/xmm-newton/xmmssc.html
+
+We hope to however extended it to all observations as would be found in the
+master catalogue. #TODO
+""" 
+import logging
 import pandas as pd
 import numpy as np
-from astroquery.heasarc import Heasarc
-import logging
+from astroquery.heasarc import Heasarc as h
 import auxil as aux
 
-h = Heasarc()
 
-def GetObservationListXMM(object_name):
+def GetObservationListXMM(source_name):
     try:
-        obs_list = h.query_object(object_name, mission='xmmssc', fields='All')
+        obs_list = h.query_object(source_name, mission='xmmssc', fields='All')
         return obs_list
     except:
         logging.debug('Failed to get XMM observation list')
@@ -23,12 +28,12 @@ def GetObservationListXMM(object_name):
 def GetStartAndEndTimesXMM(observation_list):
     start_time = np.array(observation_list['TIME'])
     end_time = np.array(observation_list['END_TIME'])
-    
+
     start_end = pd.DataFrame()
     start_end['START_TIME'] = start_time
     start_end['END_TIME'] = end_time
     return start_end
-        
+
 def GetFluxXMM_PN(observation_list):
     pn_flux = pd.DataFrame()
     pn1 = np.array(observation_list['PN_1_FLUX'])
@@ -38,7 +43,7 @@ def GetFluxXMM_PN(observation_list):
     pn5 = np.array(observation_list['PN_5_FLUX'])
     pn8 = np.array(observation_list['PN_8_FLUX'])
     pn9 = np.array(observation_list['PN_9_FLUX'])
-    
+
     pn_flux['PN_1_FLUX'] = pn1
     pn_flux['PN_2_FLUX'] = pn2
     pn_flux['PN_3_FLUX'] = pn3
@@ -57,7 +62,7 @@ def GetFluxXMM_MOS1(observation_list):
     mos1_5 = np.array(observation_list['M1_5_FLUX'])
     mos1_8 = np.array(observation_list['M1_8_FLUX'])
     mos1_9 = np.array(observation_list['M1_9_FLUX'])
-    
+
     mos1_flux['M1_1_FLUX'] = mos1_1
     mos1_flux['M1_2_FLUX'] = mos1_2
     mos1_flux['M1_3_FLUX'] = mos1_3
@@ -77,7 +82,7 @@ def GetFluxXMM_MOS2(observation_list):
     mos2_5 = np.array(observation_list['M2_5_FLUX'])
     mos2_8 = np.array(observation_list['M2_8_FLUX'])
     mos2_9 = np.array(observation_list['M2_9_FLUX'])
-    
+
     mos2_flux['M2_1_FLUX'] = mos2_1
     mos2_flux['M2_2_FLUX'] = mos2_2
     mos2_flux['M2_3_FLUX'] = mos2_3
@@ -86,7 +91,7 @@ def GetFluxXMM_MOS2(observation_list):
     mos2_flux['M2_8_FLUX'] = mos2_8
     mos2_flux['M2_9_FLUX'] = mos2_9
     return mos2_flux
-    
+
 def GetFluxXMM(observation_list):
     '''
     For this mission, the fluxes for XMM are given for the basic bands:
@@ -95,7 +100,7 @@ def GetFluxXMM(observation_list):
         Flux band 3 = 1.0 - 2.0 keV (soft)
         Flux band 4 = 2.0 - 4.5 keV (hard)
         Flux band 5 = 4.5 - 12.0 keV (hard)
-        
+
     We also have the broad energy bands given by:
         Flux band 6 = 0.2 - 2.0 keV (N/A)
         Flux band 7 = 2.0 - 12.0 keV (N/A)
@@ -118,3 +123,5 @@ def XMMComplete(source_name):
     start_end = GetStartAndEndTimesXMM(observation_list)
     aux.PlotStartAndEndTimes(start_end)
     PlotAllFluxesXMM(observation_list)
+source_name = 'NGC1313'
+XMMComplete(source_name)

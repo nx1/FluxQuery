@@ -6,7 +6,7 @@ Created on Thu Jun  6 12:24:26 2019
 @author: nk7g14
 This file hold various auxilery functions used in FluxQuery.
 """
-import matplotlib.pyplot as plt
+
 import os
 import urllib.request
 import shutil
@@ -15,6 +15,7 @@ from astropy.time import Time
 import gzip
 import tarfile
 import logging
+import matplotlib.pyplot as plt
 
 logging.basicConfig(level=logging.DEBUG, format=' %(asctime)s -- %(message)s')
 
@@ -31,7 +32,7 @@ def PlotStartAndEndTimes(start_end):
     for index, row in start_end.iterrows():
         plt.scatter(row['START_TIME'], 1)
         plt.hlines(1, row['START_TIME'], row['END_TIME'])
-             
+
 def FetchFile(url, path):
     '''
     retrieves the file from a given URL
@@ -40,9 +41,9 @@ def FetchFile(url, path):
     try:
         urllib.request.urlretrieve(url, path)
     except urllib.error.HTTPError:
-        logging.debug('could not find:', url)
+        logging.debug('could not find: {}'.format(url))
         pass
-    
+
 def UnzipAllgzFiles(path):
     '''
     Unzips all the gz files in a given path
@@ -61,10 +62,6 @@ def RemoveAllgzFiles(path):
     for file in gz_files:
         os.remove(file)
 
-def UnzipAndRemoveAllgzFiles(path):
-    UnzipAllgzFiles(path)
-    RemoveAllgzFiles(path)
-    
 def UnzipalltarFiles(path):
     cwd = os.getcwd()
     os.chdir(path)
@@ -86,16 +83,17 @@ def RemoveAlltarFiles(path):
     for file in tar_files:
         os.remove(file)
     os.chdir(cwd)
-    
+
 def UnzipAndRemoveAlltarFiles(path):
     UnzipalltarFiles(path)
     RemoveAlltarFiles(path)
-    
-def CreateEventListFile(path):
+
+def CreateListFile(path, extension):
     '''
     Creates list file of all event files .evt in directory for use in Xselect
+    extension to be specified as 'txt' or 'evt' aka no dots or anything
     '''
-    evt_files = glob.glob(path + '/*.evt')
+    evt_files = glob.glob(path + '/*' + extension)
     f = open('{}/file.ls'.format(path), 'w+')
     for path in evt_files:
         filename = path.split('/')[-1]

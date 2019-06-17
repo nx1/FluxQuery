@@ -52,11 +52,14 @@ M = {
  'NICER': 'nicermastr', 
  'SWIFTUV': 'swuvotssob',
  }
+
+
+The source position (in the XRT co-ordinate frame) used for these products was:
+RA (J2000.0) = 49.5839 degrees, Dec (J2000.0) =-66.4864 degrees.
 '''
 
 import xmm
 import swift
-import logging
 source_name = 'NGC1313'
 
 xmm.XMMComplete(source_name)

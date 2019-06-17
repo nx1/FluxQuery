@@ -9,7 +9,7 @@ import pandas as pd
 import auxil as aux
 import os
 import requests
-from astroquery.heasarc import Heasarc
+from astroquery.heasarc import Heasarc as h
 import logging
 import re
 from astropy.io import fits
@@ -19,19 +19,18 @@ import glob
 from datetime import datetime
 
 logging.basicConfig(level=logging.DEBUG, format=' %(asctime)s -- %(message)s')
-h = Heasarc()
 
-def GetObservationListRXTE(object_name):
+def GetObservationListRXTE(source_name):
     try:
-        obs_list = h.query_object(object_name, mission='XTEMASTER', fields='All')
+        obs_list = h.query_object(source_name, mission='XTEMASTER', fields='All')
         return obs_list
     except:
         logging.debug('Failed to get RXTE observation list')
 
 def CreateSaveDirectories():
-    os.mkdir('sources')
-    os.mkdir('sources/{}'.format(source_name))
-    os.mkdir('sources/{}/rxte'.format(source_name))
+    os.makedirs('sources', exist_ok=True)
+    os.makedirs('sources/{}'.format(source_name), exist_ok=True)
+    os.makedirs('sources/{}/rxte'.format(source_name), exist_ok=True)
     
 def DownloadRXTEObservation(obsID, source_name):
     #TODO Add progress bar
