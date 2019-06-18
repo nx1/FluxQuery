@@ -16,6 +16,8 @@ import gzip
 import tarfile
 import logging
 import matplotlib.pyplot as plt
+import sys
+import time
 
 logging.basicConfig(level=logging.DEBUG, format=' %(asctime)s -- %(message)s')
 
@@ -33,13 +35,28 @@ def PlotStartAndEndTimes(start_end):
         plt.scatter(row['START_TIME'], 1)
         plt.hlines(1, row['START_TIME'], row['END_TIME'])
 
+def reporthook(count, block_size, total_size):
+    '''
+    report hook used for urllib progress
+    '''
+    global start_time
+    if count == 0:
+        start_time = time.time()
+        return
+    duration = time.time() - start_time
+    progress_size = int(count * block_size)
+    speed = int(progress_size / (1024 * duration))
+    percent = int(count * block_size * 100 / total_size)
+    sys.stdout.write("\r...%d%%, %d MB, %d KB/s, %d seconds passed" %
+                    (percent, progress_size / (1024 * 1024), speed, duration))
+
 def FetchFile(url, path):
     '''
     retrieves the file from a given URL
     path: Save Location
     '''
     try:
-        urllib.request.urlretrieve(url, path)
+        urllib.request.urlretrieve(url, path, reporthook)
     except urllib.error.HTTPError:
         logging.debug('could not find: {}'.format(url))
         pass

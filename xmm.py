@@ -16,7 +16,7 @@ import pandas as pd
 import numpy as np
 from astroquery.heasarc import Heasarc as h
 import auxil as aux
-
+¬
 
 def GetObservationListXMM(source_name):
     try:
