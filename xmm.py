@@ -18,6 +18,7 @@ from astroquery.heasarc import Heasarc as h
 import auxil as aux
 import matplotlib.pyplot as plt
 
+
 def GetObservationListXMM(source_name):
     try:
         obs_list = h.query_object(source_name, mission='xmmssc', fields='All')
@@ -35,6 +36,7 @@ def GetStartAndEndTimesXMM(observation_list):
     start_end['START_TIME'] = start_time
     start_end['END_TIME'] = end_time
     return start_end
+
 
 def GetFluxXMM_PN(observation_list):
     pn_flux = pd.DataFrame()
@@ -68,6 +70,7 @@ def GetFluxXMM_PN(observation_list):
     pn_flux['PN_9_FLUX'] = pn9
     pn_flux['PN_9_FLUX_ERROR'] = pn9_err
     return pn_flux
+
 
 def GetFluxXMM_MOS1(observation_list):
     mos1_flux = pd.DataFrame()
@@ -103,6 +106,7 @@ def GetFluxXMM_MOS1(observation_list):
 
     return mos1_flux
 
+
 def GetFluxXMM_MOS2(observation_list):
     mos2_flux = pd.DataFrame()
     mos2_1 = np.array(observation_list['M2_1_FLUX'])
@@ -136,6 +140,7 @@ def GetFluxXMM_MOS2(observation_list):
     mos2_flux['M2_9_FLUX_ERROR'] = mos2_9_err
     return mos2_flux
 
+
 def GetFluxXMM(observation_list):
     '''
     For this mission, the fluxes for XMM are given for the basic bands:
@@ -157,38 +162,3 @@ def GetFluxXMM(observation_list):
     mapping = [flux_pn, flux_mos1, flux_mos2]
     all_fluxes = pd.concat(mapping, axis=1)
     return all_fluxes
-
-def PlotAllFluxesXMM(source_name, observation_list):
-    start_end = GetStartAndEndTimesXMM(observation_list)
-    flux = GetFluxXMM(observation_list)
-    df = pd.concat([start_end, flux], axis=1)
-    df = df.sort_values(by='START_TIME')
-    flux_bands = [1, 2, 3, 4, 5, 8, 9]
-
-    fig, ax = plt.subplots(3, sharex=True)
-    plt.suptitle(source_name)
-
-    for i in flux_bands:
-        pn_flux = 'PN_{}_FLUX'.format(i)
-        pn_flux_err = 'PN_{}_FLUX_ERROR'.format(i)
-        mos1_flux = 'M1_{}_FLUX'.format(i)
-        mos1_flux_err = 'M1_{}_FLUX_ERROR'.format(i)
-        
-        mos2_flux = 'M2_{}_FLUX'.format(i)
-        mos2_flux_err = 'M2_{}_FLUX_ERROR'.format(i)
-        
-        ax[0].errorbar(df['START_TIME'], df[pn_flux], yerr=df[pn_flux_err],
-                     capsize=0.5, marker='None', ls='none', label=pn_flux)
-        ax[1].errorbar(df['START_TIME'], df[mos1_flux], yerr=df[mos1_flux_err],
-                     capsize=0.5, marker='None', ls='none', label=mos1_flux)
-        ax[2].errorbar(df['START_TIME'], df[mos2_flux], yerr=df[mos2_flux_err],
-                     capsize=0.5, marker='None', ls='none', label=mos2_flux)
-
-    ax[0].set_ylabel('Flux $\mathrm{erg \ s^{-1}}$')
-    ax[1].set_ylabel('Flux $\mathrm{erg \ s^{-1}}$')
-    ax[2].set_ylabel('Flux $\mathrm{erg \ s^{-1}}$')
-    ax[2].set_xlabel('Time (MJD)')
-
-    ax[0].legend()
-    ax[1].legend()
-    ax[2].legend()

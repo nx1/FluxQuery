@@ -52,14 +52,21 @@ def GetFluxesFromCatFile(file, source_ra, source_dec, radius):
 
 def GetAllFluxes(source_name):
     logging.warn('CURRENTLY USING HARDCODED RA/DEC')
-    # coords = SkyCoord.from_name(source_name)
-    # source_ra = coords.ra.deg
-    # source_dec = coords.dec.deg
+    coords = SkyCoord.from_name(source_name)
+    source_ra = coords.ra.deg
+    source_dec = coords.dec.deg
     
     cat_files = glob.glob('sources/{}/swift/uvot/cat/*.cat'.format(source_name))
-    
-    source_ra = 49.58333   #NGC1313 HARDCODED
-    source_dec = -66.48639 #NGC1313 HARDCODED
+    try:
+        logging.debug('Looking for prebuilt swift_uvot flux df')
+        df = pd.read_csv('sources/{}/swift/uvot/cat/flux_df.csv'.format(source_name))
+        return df
+    except FileNotFoundError:
+        logging.debug('Could not find prebuilt swift_uvot flux df')
+        pass
+        
+    # source_ra = 49.58333   #NGC1313 HARDCODED
+    # source_dec = -66.48639 #NGC1313 HARDCODED
     search_radius = 0.1
     
     catobsID = swift.GetObservationID(source_name)
@@ -86,9 +93,5 @@ def GetAllFluxes(source_name):
     df = pd.DataFrame.from_records(rows)
     df.columns = ['OBSID', 'START_TIME', 'MEAN_FLUX', 'MEAN_FLUX_ERR']
     df = df.sort_values(by=['START_TIME'])
+    df.to_csv('sources/{}/swift/uvot/cat/flux_df.csv'.format(source_name))
     return df
-
-def PlotAllFluxesSWIFTUVOT(source_name):
-    flux_df = GetAllFluxes(source_name)
-    plt.errorbar(flux_df['START_TIME'], flux_df['MEAN_FLUX'],
-                  yerr=flux_df['MEAN_FLUX_ERR'], capsize=0.5, marker='None', ls='none')

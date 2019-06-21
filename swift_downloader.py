@@ -20,7 +20,7 @@ import logging
 import swift
 import auxil as aux
 
-def CreateSaveDirectories():
+def CreateSaveDirectories(source_name):
     os.makedirs('sources', exist_ok=True)
     os.makedirs('sources/{}'.format(source_name), exist_ok=True)
     os.makedirs('sources/{}/swift'.format(source_name), exist_ok=True)
@@ -29,7 +29,7 @@ def CreateSaveDirectories():
     os.makedirs('sources/{}/swift/uvot/img'.format(source_name), exist_ok=True)
     os.makedirs('sources/{}/swift/uvot/cat'.format(source_name), exist_ok=True)
 
-def DownloadEventFiles(observation_ids):
+def DownloadEventFiles(source_name, observation_ids):
     '''
     Downloads (level 2) Screened event files for given list of observation IDs
     '''
@@ -51,7 +51,7 @@ def DownloadEventFiles(observation_ids):
        # aux.FetchFile('http://www.swift.ac.uk/archive/reproc/%s/uvot/image/sw%suuu_rw.img.gz' % (obsID,obsID),
        #           '%s/%s/uvot/img/sw%suuu_rw.img.gz' % (cwd, source_name, obsID))
 
-def CleanUpgzFiles():
+def CleanUpgzFiles(source_name):
     aux.UnzipAllgzFiles('sources/{}/swift/xrt'.format(source_name))
     aux.RemoveAllgzFiles('sources/{}/swift/xrt'.format(source_name))
 
@@ -61,14 +61,10 @@ def CleanUpgzFiles():
     aux.UnzipAllgzFiles('sources/{}/swift/uvot/cat'.format(source_name))
     aux.RemoveAllgzFiles('sources/{}/swift/uvot/cat'.format(source_name))
 
-def Complete():
+def Complete(source_name):
     observation_IDs = swift.GetObservationID(source_name)
-    CreateSaveDirectories()
-    DownloadEventFiles(observation_IDs)
-    CleanUpgzFiles()
+    CreateSaveDirectories(source_name)
+    DownloadEventFiles(source_name, observation_IDs)
+    CleanUpgzFiles(source_name)
     aux.CreateListFile('sources/{}/swift/xrt'.format(source_name), 'evt')
     aux.CreateListFile('sources/{}/swift/uvot/img'.format(source_name), 'img')
-
-
-source_name = 'NGC1313'
-Complete()

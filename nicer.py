@@ -28,6 +28,7 @@ Process for creating a NiCER lightcurve:
 """
 import os
 import logging
+from pathlib import Path
 import re
 import numpy as np
 from astroquery.heasarc import Heasarc as h
@@ -55,7 +56,8 @@ def GetObservationListNICER(source_name):
         obs_list['FOLDER'] = times_iso #Corresponding folder for fetching data
         return obs_list
     except:
-        logging.debug('Failed to get XMM observation list')
+        logging.debug('Failed to get NICER observation list')
+        return None
 
 
 def DownloadEventFiles(source_name):
@@ -65,6 +67,10 @@ def DownloadEventFiles(source_name):
     '''
     cwd = os.getcwd()   #Current Working Directory
     obs_list = GetObservationListNICER(source_name)
+    if obs_list == None:
+        return logging.debug('No observation_list found, nothing to download')
+    else:
+        pass
 
     for row in obs_list:
         obsID = row['OBSID']
@@ -74,7 +80,12 @@ def DownloadEventFiles(source_name):
         url_cl_savepath = '{}/sources/{}/nicer/xti/ni{}_0mpu7_cl.evt.gz'.format(cwd, source_name, obsID)
         aux.FetchFile(url_cl_evt, url_cl_savepath)
 
-def xselect():
+def xselect(source_name):
+    lc_path = 'sources/{}/nicer/xti/lightcurve.lc'.format(source_name)
+    if Path(lc_path).is_file():
+        return logging.debug('Nicer lightcurve file already exists: %s', lc_path)
+    else:
+        pass
     home_dir = os.getcwd()
     os.chdir('sources/{}/nicer/xti'.format(source_name))
 
@@ -100,38 +111,55 @@ n
     subprocess.call(['xselect < script.xcm'], shell=True)
     os.chdir(home_dir)
 
-def ReadLightCurve():
+def GetZeroTime(source_name):
+    """
+    Obtains the earliest
+    """
+    obs_list = h.query_object(source_name, mission='nicermastr', fields='All')
+    time_column = np.array(obs_list['TIME'], dtype=float)
+    zero_time = np.min(time_column)
+    return zero_time
+
+def ReadLightCurve(source_name):
     df = pd.DataFrame()
+    zero_time = GetZeroTime(source_name)
     lightcurve_path = 'sources/{}/nicer/xti/lightcurve.lc'.format(source_name)
     data = fits.open(lightcurve_path)
-    df['TIME'] = np.array(data[1].data['TIME'], dtype='float')
+    
+    time = np.array(data[1].data['TIME'], dtype='float')
+    time_mjd = aux.s2mjd(time) + zero_time
+    
+    df['TIME'] = time
+    df['TIME_MJD'] = time_mjd
     df['RATE'] = np.array(data[1].data['RATE'], dtype='float')
     df['RATE_ERROR'] = np.array(data[1].data['ERROR'], dtype='float')
     return df
 
-def PlotLightCurve():
-    lc = ReadLightCurve()
-    plt.errorbar(x=lc['TIME'], y=lc['RATE'], yerr=lc['RATE_ERROR'],
+def PlotLightCurve(source_name):
+    lc = ReadLightCurve(source_name)
+    plt.errorbar(x=lc['TIME_MJD'], y=lc['RATE'], yerr=lc['RATE_ERROR'],
                  capsize=0.5, marker='None', ls='none', label='NiCER')
 
-def CreateSaveDirectories():
+def CreateSaveDirectories(source_name):
+    logging.debug('Creating NICER save directories')
     os.makedirs('sources', exist_ok=True)
     os.makedirs('sources', exist_ok=True)
     os.makedirs('sources/{}'.format(source_name), exist_ok=True)
     os.makedirs('sources/{}/nicer'.format(source_name), exist_ok=True)
     os.makedirs('sources/{}/nicer/xti'.format(source_name), exist_ok=True)
 
-def CleanUpgzFiles():
+def CleanUpgzFiles(source_name):
+    logging.debug('Cleaning NICER gz files')
     aux.UnzipAllgzFiles('sources/{}/nicer/xti'.format(source_name))
     aux.RemoveAllgzFiles('sources/{}/nicer/xti'.format(source_name))
 
-#TODO CONVERT TIME TO MJD
 def Complete():
-    CreateSaveDirectories()
+    CreateSaveDirectories(source_name)
     DownloadEventFiles(source_name)
-    CleanUpgzFiles()
+    CleanUpgzFiles(source_name)
     aux.CreateListFile('sources/{}/nicer/xti'.format(source_name), 'evt')
-    xselect()
-    PlotLightCurve()
+    xselect(source_name)
+    PlotLightCurve(source_name)
 
-source_name = 'NGC300'
+# source_name = 'NGC1313'
+# Complete()

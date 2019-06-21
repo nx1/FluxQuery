@@ -22,10 +22,12 @@ logging.basicConfig(level=logging.DEBUG, format=' %(asctime)s -- %(message)s')
 
 def GetObservationListRXTE(source_name):
     try:
+        logging.debug('Querying Heasarc XTEMASTER catalogue')
         obs_list = h.query_object(source_name, mission='XTEMASTER', fields='All')
         return obs_list
     except:
         logging.debug('Failed to get RXTE observation list')
+        return None
 
 def CreateSaveDirectories():
     os.makedirs('sources', exist_ok=True)
@@ -35,9 +37,14 @@ def CreateSaveDirectories():
 def DownloadRXTEObservation(obsID, source_name):
     logging.debug('Downloading RXTE observation: %s', obsID)
     filepath = '/sources/{}/rxte/{}.tar'.format(source_name,obsID)
-
-    if Path(filepath).is_file():
-        logging.debug(filepath, 'already exists, not downloading.')
+    first_bit = obsID.split('-')[0]
+    filepath_folder = 'P' + first_bit #Extracted OBSid folder
+    
+    tar_exists = Path(filepath).is_file()
+    folder_exists = Path(filepath_folder).is_file()
+    
+    if Path(filepath).is_file() or filepath_folder:
+        logging.debug('Folder or tar file already exists, not downloading.')
     else:
         first_bit = obsID.split('-')[0]
         url = 'http://heasarc.gsfc.nasa.gov/cgi-bin/W3Browse/xteTar.pl?obsid={}&prnb={}'.format(obsID, first_bit)
@@ -144,8 +151,16 @@ def GetAllCounts():
     returns a dictionary containing all the flux dataframes
     '''
     walk = os.walk('sources/{}/rxte'.format(source_name))
+    
     obsIDregex = re.compile(r'\d{5}-\d{2}-\d{2}-\d{2}')
     df_dict = {}
+    
+    gz_files = glob.glob('sources/{}/rxte/*/*/stdprod/*.xfl.gz'.format(source_name))
+    xfl_files = glob.glob('sources/{}/rxte/*/*/stdprod/*.xfl'.format(source_name))
+    
+    len(gz_files)
+    len(xfl_files)
+    
     for walk_iter in walk:
         if 'stdprod' in walk_iter[0]:
             result = obsIDregex.search(walk_iter[0])
@@ -168,8 +183,8 @@ def RXTEComplete():
     obs_list = GetObservationListRXTE(source_name)
     CreateSaveDirectories()
 
-    #for observation in obs_list['OBSID']:
-    #    DownloadRXTEObservation(observation, source_name)
+    for observation in obs_list['OBSID']:
+        DownloadRXTEObservation(observation, source_name)
     aux.UnzipalltarFiles('sources/{}/rxte'.format(source_name))
     aux.RemoveAlltarFiles('sources/{}/rxte'.format(source_name))
     df_dict = GetAllCounts()
@@ -177,6 +192,6 @@ def RXTEComplete():
     df.plot(x='Time')
     return df
 
-# source_name = 'GRS1915+105'
-# df = RXTEComplete()
+source_name = 'GRS1915+105'
+df = RXTEComplete()
     

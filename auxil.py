@@ -26,6 +26,7 @@ logging.basicConfig(level=logging.DEBUG, format=' %(asctime)s -- %(message)s')
 
 mjd2year = lambda times: Time(times, format='mjd').decimalyear
 s2year = lambda times: times/60/60/24/365.25
+s2mjd = lambda times: times / 86400.0
 
 def PlotStartAndEndTimes(start_end):
     '''
@@ -101,6 +102,7 @@ def UnzipalltarFiles(path):
     Unzips all tar files in a given path
     '''
     tar_files = glob.glob(path + '/*.tar')
+    
     for file in tar_files:
         logging.debug('Unzipping %s', file)
         file = tarfile.open(name=file, mode='r')
