@@ -11,13 +11,16 @@ import os
 import urllib.request
 import shutil
 import glob
-from astropy.time import Time
+import sys
+import time
+from pathlib import Path
 import gzip
 import tarfile
 import logging
+
+from astropy.time import Time
 import matplotlib.pyplot as plt
-import sys
-import time
+
 
 logging.basicConfig(level=logging.DEBUG, format=' %(asctime)s -- %(message)s')
 
@@ -55,10 +58,22 @@ def FetchFile(url, path):
     retrieves the file from a given URL
     path: Save Location
     '''
+    path_no_gz = path.replace('.gz', '')
+    path_no_tar = path.replace('.tar', '')
+    path_no_targz = path.replace('.tar.gz', '')
+
+    path_is_file = Path(path).is_file()
+    gz_is_file = Path(path_no_gz).is_file()
+    tar_is_file = Path(path_no_tar).is_file()
+    targz_is_file = Path(path_no_targz).is_file()
+
     try:
-        urllib.request.urlretrieve(url, path, reporthook)
+        if path_is_file or gz_is_file or tar_is_file or targz_is_file:
+            logging.debug('%s already exists, not downloading.', path)
+        else:
+            urllib.request.urlretrieve(url, path, reporthook)
     except urllib.error.HTTPError:
-        logging.debug('could not find: {}'.format(url))
+        logging.debug('could not find: %s', url)
         pass
 
 def UnzipAllgzFiles(path):
@@ -67,6 +82,7 @@ def UnzipAllgzFiles(path):
     '''
     gz_files = glob.glob(path + '/*.gz')
     for file in gz_files:
+        logging.debug('Unzipping %s', file)
         with gzip.open(file, 'rb') as f_in:
             with open(file[:-3], 'wb') as f_out:
                 shutil.copyfileobj(f_in, f_out)
@@ -77,33 +93,28 @@ def RemoveAllgzFiles(path):
     '''
     gz_files = glob.glob(path + '/*.gz')
     for file in gz_files:
+        logging.debug('Removing %s', file)
         os.remove(file)
 
 def UnzipalltarFiles(path):
-    cwd = os.getcwd()
-    os.chdir(path)
-    tar_files = glob.glob('*.tar')
+    '''
+    Unzips all tar files in a given path
+    '''
+    tar_files = glob.glob(path + '/*.tar')
     for file in tar_files:
-        logging.debug(file)
+        logging.debug('Unzipping %s', file)
         file = tarfile.open(name=file, mode='r')
         file.extractall()
         file.close()
-    os.chdir(cwd)
 
 def RemoveAlltarFiles(path):
     '''
     Removes all tar files in a given path
     '''
-    cwd = os.getcwd()
-    os.chdir(path)
-    tar_files = glob.glob('*.tar')
+    tar_files = glob.glob(path + '/*.tar')
     for file in tar_files:
+        logging.debug('Removing %s', file)
         os.remove(file)
-    os.chdir(cwd)
-
-def UnzipAndRemoveAlltarFiles(path):
-    UnzipalltarFiles(path)
-    RemoveAlltarFiles(path)
 
 def CreateListFile(path, extension):
     '''
@@ -112,7 +123,7 @@ def CreateListFile(path, extension):
     '''
     evt_files = glob.glob(path + '/*' + extension)
     f = open('{}/file.ls'.format(path), 'w+')
-    for path in evt_files:
-        filename = path.split('/')[-1]
+    for file in evt_files:
+        filename = file.split('/')[-1]
         f.write(filename +'\n')
     f.close()

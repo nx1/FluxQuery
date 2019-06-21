@@ -26,8 +26,21 @@ home_path = os.getcwd()
 img_path = 'sources/NGC1313/swift/uvot/img'
 
 def uvotsource(image_file):
+    '''
+    Performs the 'uvotsource' command on a given .img file
+    '''
     output_file = image_file[:-4] + '.fits'
     subprocess.call(['uvotsource image={} srcreg=src.reg bkgreg=bkg.reg sigma=1.0 outfile=uvotsource/{}'.format(image_file, output_file)], shell=True)
+
+def uvotproduct(image_file):
+    '''
+    #TODO translate the following into python
+    my @in = <file>;
+    $t = $in3[0];
+    $MET = (($t - 53769.415972)*24*3600) + 160653541.0;
+    system "uvotproduct timezero=$MET infile=$dir outfile=$outfile plotfile=$outfile2 srcreg=src.reg bkgreg=bkg.reg batpos=NONE xrtpos=NONE uvotpos=NONE groundpos=NONE reportfile=$rep clobber=yes"; 
+    '''
+    pass
 
 def GetFluxes(fits_file):
     df = pd.DataFrame()

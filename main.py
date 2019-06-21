@@ -60,7 +60,28 @@ RA (J2000.0) = 49.5839 degrees, Dec (J2000.0) =-66.4864 degrees.
 
 import xmm
 import swift
-source_name = 'NGC1313'
+import auxil as aux
 
-xmm.XMMComplete(source_name)
-swift.SWIFTXRTComplete(source_name)
+source_name = 'NGC1313'
+def XMMComplete(source_name):
+    observation_list = xmm.GetObservationListXMM(source_name)
+    if observation_list == None:
+        print('Observation list not found, exiting.')
+    else:
+        xmm.PlotAllFluxesXMM(source_name, observation_list)#
+
+def SWIFTXRTComplete(source_name):
+    observation_list = swift.GetObservationList(source_name)
+    start_end = swift.GetStartAndEndTimes(observation_list)
+    aux.PlotStartAndEndTimes(start_end)
+
+def SWIFTUVOTComplete(source_name):
+    observation_list = swift.GetObservationList(source_name)
+    start_end = swift.GetStartAndEndTimes(observation_list)
+    aux.PlotStartAndEndTimes(start_end)
+
+
+
+
+XMMComplete(source_name)
+# SWIFTXRTComplete(source_name)

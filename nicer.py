@@ -18,13 +18,13 @@ https://heasarc.gsfc.nasa.gov/docs/nicer/data_analysis/nicer_analysis_guide.html
 Process for creating a NiCER lightcurve:
     1) Download all the cleaned event files from heasarc
     2) Create list file for use in xselect
-    XSELECT:    
+    XSELECT:
         3) read events "@file.ls"
         4) set binsize pha_cutoff 200 1200
         5) extract curve
         6) save curve lightcurve.lc
     7) read the output into python.
-    
+
 """
 import os
 import logging
@@ -69,7 +69,7 @@ def DownloadEventFiles(source_name):
     for row in obs_list:
         obsID = row['OBSID']
         folder = row['FOLDER']
-        logging.debug('Downloading {}'.format(obsID))
+        logging.debug('Downloading %s', obsID)
         url_cl_evt = 'https://heasarc.gsfc.nasa.gov/FTP/nicer/data/obs/{}/{}/xti/event_cl/ni{}_0mpu7_cl.evt.gz'.format(folder, obsID, obsID)
         url_cl_savepath = '{}/sources/{}/nicer/xti/ni{}_0mpu7_cl.evt.gz'.format(cwd, source_name, obsID)
         aux.FetchFile(url_cl_evt, url_cl_savepath)
@@ -77,13 +77,13 @@ def DownloadEventFiles(source_name):
 def xselect():
     home_dir = os.getcwd()
     os.chdir('sources/{}/nicer/xti'.format(source_name))
-    
+
     binsize = 100   #Binsize in seconds
     low_cutoff = 200 #Low end cutoff frequency in eV
     high_cutoff = 1000 #High end cutoff frequency in eV
-    
+
     script_file = open('script.xcm', 'w')
-    
+
     script_text = '''NICER
 read event "@file.ls"
 ./
@@ -101,7 +101,7 @@ n
     os.chdir(home_dir)
 
 def ReadLightCurve():
-    df = pd.DataFrame()    
+    df = pd.DataFrame()
     lightcurve_path = 'sources/{}/nicer/xti/lightcurve.lc'.format(source_name)
     data = fits.open(lightcurve_path)
     df['TIME'] = np.array(data[1].data['TIME'], dtype='float')
@@ -113,20 +113,20 @@ def PlotLightCurve():
     lc = ReadLightCurve()
     plt.errorbar(x=lc['TIME'], y=lc['RATE'], yerr=lc['RATE_ERROR'],
                  capsize=0.5, marker='None', ls='none', label='NiCER')
-    
+
 def CreateSaveDirectories():
     os.makedirs('sources', exist_ok=True)
     os.makedirs('sources', exist_ok=True)
     os.makedirs('sources/{}'.format(source_name), exist_ok=True)
     os.makedirs('sources/{}/nicer'.format(source_name), exist_ok=True)
     os.makedirs('sources/{}/nicer/xti'.format(source_name), exist_ok=True)
-    
+
 def CleanUpgzFiles():
     aux.UnzipAllgzFiles('sources/{}/nicer/xti'.format(source_name))
     aux.RemoveAllgzFiles('sources/{}/nicer/xti'.format(source_name))
 
 #TODO CONVERT TIME TO MJD
-def Complete(): 
+def Complete():
     CreateSaveDirectories()
     DownloadEventFiles(source_name)
     CleanUpgzFiles()

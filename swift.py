@@ -31,7 +31,7 @@ def GetObservationID(source_name):
     Queries
     '''
     try:
-        logging.debug('Getting OBSIDs for {}'.format(source_name))
+        logging.debug('Getting OBSIDs for %s', source_name)
         query = h.query_object(source_name, 'swiftmastr', fields='OBSID')
     except:
         logging.debug('Failed to get Swift observation list')
@@ -65,11 +65,3 @@ def GetStartAndEndTimes(observation_list):
     return start_end
 
 #TODO Find a way of getting swift-xrt fluxes.
-
-def SWIFTXRTComplete(source_name):
-    observation_list = GetObservationList(source_name)
-    start_end = GetStartAndEndTimes(observation_list)
-    aux.PlotStartAndEndTimes(start_end)
-
-# source_name = 'NGC1313'
-# SWIFTXRTComplete(source_name)
