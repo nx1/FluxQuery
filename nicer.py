@@ -40,7 +40,7 @@ import pandas as pd
 
 import auxil as aux
 
-def GetObservationListNICER(source_name):
+def GetObservationList(source_name):
     '''
     Obtains the list of observation from the nicer master catalogue on Heasarc
     '''
@@ -66,7 +66,7 @@ def DownloadEventFiles(source_name):
     Downloads all cleaned event files from NiCER Archive
     '''
     cwd = os.getcwd()   #Current Working Directory
-    obs_list = GetObservationListNICER(source_name)
+    obs_list = GetObservationList(source_name)
     if obs_list == None:
         return logging.debug('No observation_list found, nothing to download')
     else:

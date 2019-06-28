@@ -20,7 +20,7 @@ from datetime import datetime
 
 logging.basicConfig(level=logging.DEBUG, format=' %(asctime)s -- %(message)s')
 
-def GetObservationListRXTE(source_name):
+def GetObservationList(source_name):
     try:
         logging.debug('Querying Heasarc XTEMASTER catalogue')
         obs_list = h.query_object(source_name, mission='XTEMASTER', fields='All')
@@ -180,7 +180,7 @@ def MergeDataframeDictionary(df_dict):
     return df
 
 def RXTEComplete():
-    obs_list = GetObservationListRXTE(source_name)
+    obs_list = GetObservationList(source_name)
     CreateSaveDirectories()
 
     for observation in obs_list['OBSID']:
@@ -192,6 +192,6 @@ def RXTEComplete():
     df.plot(x='Time')
     return df
 
-source_name = 'GRS1915+105'
-df = RXTEComplete()
+# source_name = 'GRS1915+105'
+# df = RXTEComplete()
     

@@ -12,9 +12,22 @@ http://cxc.harvard.edu/ciao/scripting/
 http://cxc.harvard.edu/ciao/scripting/runtool.html
 """
 
-import subprocess
-subprocess.call(['. /home/nk7g14/ciao-4.11/bin/ciao.bash'], shell=True)
-subprocess.run(['cat /home/nk7g14/ciao-4.11/bin/contrib/VERSION.CIAO_scripts'], shell=True)
+# import subprocess
+# subprocess.call(['. /home/nk7g14/ciao-4.11/bin/ciao.bash'], shell=True)
+# subprocess.run(['cat /home/nk7g14/ciao-4.11/bin/contrib/VERSION.CIAO_scripts'], shell=True)
 
 
 # from ciao_contrib.runtool import *
+
+from astroquery.heasarc import Heasarc as h
+import logging
+
+
+def GetObservationList(source_name):
+    try:
+        logging.debug('Querying Heasarc CHANMASTER catalogue')
+        obs_list = h.query_object(source_name, mission='CHANMASTER', fields='All')
+        return obs_list
+    except:
+        logging.debug('Failed to get Chandra observation list')
+        return None

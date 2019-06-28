@@ -28,6 +28,24 @@ mjd2year = lambda times: Time(times, format='mjd').decimalyear
 s2year = lambda times: times/60/60/24/365.25
 s2mjd = lambda times: times / 86400.0
 
+
+
+def GetEarliestAndLatestFromObsList(observation_list):
+        try:
+            earliest_mjd = min(observation_list['TIME'])
+            latest_mjd = max(observation_list['TIME'])
+        except KeyError:
+            try:
+                earliest_mjd = min(observation_list['START_TIME'])
+                latest_mjd = max(observation_list['START_TIME'])
+            except KeyError:
+                earliest_mjd = min(observation_list['START_DATE'])
+                latest_mjd = max(observation_list['START_DATE'])
+        except TypeError:
+            earliest_mjd = 0
+            latest_mjd =  0
+        return  earliest_mjd, latest_mjd
+
 def PlotStartAndEndTimes(start_end):
     '''
     Plots horizontal lines for the start and end time of a given array.
@@ -119,10 +137,24 @@ def RemoveAlltarFiles(path):
         os.remove(file)
 
 def CreateListFile(path, extension):
-    '''
-    Creates list file of all event files .evt in directory for use in Xselect
-    extension to be specified as 'txt' or 'evt' aka no dots or anything
-    '''
+    """
+    Creates a file containing a list of every file of a certain filetype
+    in a given directory for use in Xselect scripting.
+    
+    extension 
+
+    Parameters
+    ----------
+    path : str
+        full path excluding trailing '/'
+    extension : str
+        to be specified as 'txt' or 'evt' aka no dots or anything
+    Returns
+    -------
+    None.
+
+    """
+
     evt_files = glob.glob(path + '/*' + extension)
     f = open('{}/file.ls'.format(path), 'w+')
     for file in evt_files:

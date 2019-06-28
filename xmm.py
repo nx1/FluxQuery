@@ -19,7 +19,7 @@ import auxil as aux
 import matplotlib.pyplot as plt
 
 
-def GetObservationListXMM(source_name):
+def GetObservationList(source_name):
     try:
         obs_list = h.query_object(source_name, mission='xmmssc', fields='All')
         return obs_list
