@@ -20,14 +20,6 @@ import logging
 import swift
 import auxil as aux
 
-def CreateSaveDirectories(source_name):
-    os.makedirs('sources', exist_ok=True)
-    os.makedirs('sources/{}'.format(source_name), exist_ok=True)
-    os.makedirs('sources/{}/swift'.format(source_name), exist_ok=True)
-    os.makedirs('sources/{}/swift/xrt'.format(source_name), exist_ok=True)
-    os.makedirs('sources/{}/swift/uvot'.format(source_name), exist_ok=True)
-    os.makedirs('sources/{}/swift/uvot/img'.format(source_name), exist_ok=True)
-    os.makedirs('sources/{}/swift/uvot/cat'.format(source_name), exist_ok=True)
 
 def DownloadEventFiles(source_name, observation_ids):
     '''

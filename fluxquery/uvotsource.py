@@ -101,17 +101,23 @@ df['MAG_ERR'] = df['MAG_ERR'] / max(df['MAG'])
 '''
 
 #RAW COUNTS LIGHTCURVE FROM UVOTSOURCE 
+plt.figure(figsize=(20,6))
 plt.errorbar(df['START_MJD'], df['RAW_TOT_CNTS'], yerr=df['RAW_TOT_CNTS_ERR'],
               capsize=0.5, marker='None', ls='none', label='RAW_TOT_CNTS|uvotsource', c='green')
+plt.ylim(0, 1.1*max(df['RAW_TOT_CNTS']))
 plt.legend()
 plt.show()
 #TOTAL RATE LIGHTCURVE FROM UVOTSOURCE
+plt.figure(figsize=(20,6))
 plt.errorbar(df['START_MJD'], df['RAW_TOT_RATE'], yerr=df['RAW_TOT_RATE_ERR'],
-              capsize=0.5, marker='None', ls='none', label='RAW_TOT_RATE|uvotsource', c='cyan')
+              capsize=0.5, marker='None', ls='none', label='RAW_TOT_RATE|uvotsource', c='b')
+plt.ylim(35, 1.1*max(df['RAW_TOT_RATE']))
 plt.legend()
 
 #MAG LIGHTCURVE FROM UVOTSOURCE
+plt.figure(figsize=(20,6))
 df = df[df['MAG_ERR'] < 10]
 plt.errorbar(df['START_MJD'], df['MAG'], yerr=df['MAG_ERR'],
              capsize=0.5, marker='None', ls='none', label='MAG|uvotsource', c='blue')
+plt.ylim(14.0, 15.0)
 plt.legend()

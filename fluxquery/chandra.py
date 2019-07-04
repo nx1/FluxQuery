@@ -22,12 +22,3 @@ http://cxc.harvard.edu/ciao/scripting/runtool.html
 from astroquery.heasarc import Heasarc as h
 import logging
 
-
-def GetObservationList(source_name):
-    try:
-        logging.debug('Querying Heasarc CHANMASTER catalogue')
-        obs_list = h.query_object(source_name, mission='CHANMASTER', fields='All')
-        return obs_list
-    except:
-        logging.debug('Failed to get Chandra observation list')
-        return None

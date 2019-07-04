@@ -20,20 +20,6 @@ from datetime import datetime
 
 logging.basicConfig(level=logging.DEBUG, format=' %(asctime)s -- %(message)s')
 
-def GetObservationList(source_name):
-    try:
-        logging.debug('Querying Heasarc XTEMASTER catalogue')
-        obs_list = h.query_object(source_name, mission='XTEMASTER', fields='All')
-        return obs_list
-    except:
-        logging.debug('Failed to get RXTE observation list')
-        return None
-
-def CreateSaveDirectories():
-    os.makedirs('sources', exist_ok=True)
-    os.makedirs('sources/{}'.format(source_name), exist_ok=True)
-    os.makedirs('sources/{}/rxte'.format(source_name), exist_ok=True)
-
 def DownloadRXTEObservation(obsID, source_name):
     logging.debug('Downloading RXTE observation: %s', obsID)
     filepath = '/sources/{}/rxte/{}.tar'.format(source_name,obsID)

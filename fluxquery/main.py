@@ -3,6 +3,28 @@
 """
 Created on Thu Jun  6 12:21:30 2019
 
+@author: nk7g14
+FluxQuery is an attempt to provide long term x-ray light curves for a given
+source by querying a variety of x-ray missions, historical and current.
+
+How it will work:
+    fluxquery.query('NGC1313') #Returns a missions and observations etc
+    fluxquery.xray.lightcurve('NGC1313')
+    fluxquery
+
+USEFUL COMMANDS
+h.query_mission_list()
+table.colnames
+table.show_in_browser(jsviewer=True)
+
+Missions with time given as ['TIME']:
+    xmmssc, NUMASTER, CHANMASTER, RASS2RXS, fermilasp, suzaxislog, nicermastr
+Missions with time given as ['START_TIME']:
+    swiftmastr, mpcraw
+    
+The source position (in the XRT co-ordinate frame) used for these products was:
+RA (J2000.0) = 49.5839 degrees, Dec (J2000.0) =-66.4864 degrees.
+
 ______ _            _____                       
 |  ___| |          |  _  |                      
 | |_  | |_   ___  _| | | |_   _  ___ _ __ _   _ 
@@ -11,48 +33,12 @@ ______ _            _____
 \_|   |_|\__,_/_/\_\\_/\_\\__,_|\___|_|   \__, |
                                            __/ |
                                           |___/	0.1
-
-@author: nk7g14
-FluxQuery is an attempt to provide long term x-ray light curves for a given
-source by querying a variety of x-ray missions, historical and current.
-
-USEFUL COMMANDS
-h.query_mission_list()
-table.colnames
-table.show_in_browser(jsviewer=True)
-
 """
-
-'''
-
-'''
-
-'''
-Missions with time given as ['TIME']:
-    xmmssc, NUMASTER, CHANMASTER, RASS2RXS, fermilasp, suzaxislog, nicermastr
-Missions with time given as ['START_TIME']:
-    swiftmastr, mpcraw
-    
-M = {
- 'XMM': 'xmmssc', 
- 'Swift': 'swiftmastr', 
- 'NuSTAR': 'NUMASTER', 
- 'Chandra': 'CHANMASTER', 
- 'ROSAT': 'RASS2RXS', 
- 'Fermi': 'fermilasp', 
- 'Einstein': 'mpcraw', 
- 'SUZAKU': 'suzaxislog', 
- 'NICER': 'nicermastr', 
- 'SWIFTUV': 'swuvotssob',
- }
-
-
-The source position (in the XRT co-ordinate frame) used for these products was:
-RA (J2000.0) = 49.5839 degrees, Dec (J2000.0) =-66.4864 degrees.
-'''
+#TODO change function names to lowercase_underscore
 import matplotlib.pyplot as plt
 import pandas as pd
 import logging
+from collections import OrderedDict
 
 import auxil as aux
 import xmm
@@ -60,61 +46,50 @@ import swift
 import swift_downloader
 import swift_uvot
 import nicer
-import rxte
-import nustar
-import chandra
-import rosat
-import maxi
-import suzaku
-import integral
 
 logging.basicConfig(level=logging.NOTSET, format=' %(asctime)s -- %(message)s')
+logger = logging.getLogger('my-logger')
+logger.propagate = False
 
 def Query(source_name):
-    #TODO find a way of putting this crap in a loop
-    xmm_observation_list = xmm.GetObservationList(source_name)
-    swift_observation_list = swift.GetObservationList(source_name)
-    nicer_observation_list = nicer.GetObservationList(source_name)
-    rxte_observation_list = rxte.GetObservationList(source_name)
-    nustar_observation_list = nustar.GetObservationList(source_name)
-    chandra_observation_list = chandra.GetObservationList(source_name)
-    rosat_observation_list = rosat.GetObservationList(source_name)
-    suzaku_observation_list = suzaku.GetObservationList(source_name)
-    maxi_observation_list = maxi.GetObservationList(source_name)
-    integral_observation_list = integral.GetObservationList(source_name)
+    missions = OrderedDict([
+            ('XMM-Newton','xmmssc'),
+            ('Swift','swiftmstr'),
+            ('NiCER', 'nicermastr'),
+            ('RXTE', 'xtemaster'),
+            ('NuSTAR', 'numaster'),
+            ('Chandra', 'chanmaster'),
+            ('ROSAT', 'rass2rxs'),
+            ('SUZAKU', 'suzamaster'),
+            ('MAXI', 'maximaster'),
+            ('INTEGRAL', 'intscwpub')
+            ])
     
+    observation_lists = OrderedDict()
     
-    obs_list_array = [xmm_observation_list, swift_observation_list,
-                      nicer_observation_list, rxte_observation_list,
-                      nustar_observation_list, chandra_observation_list,
-                      rosat_observation_list, suzaku_observation_list,
-                      maxi_observation_list, integral_observation_list]
-    
-    mission_names_array = ['XMM-Newton', 'Swift', 'NiCER', 'RXTE', 'NuSTAR',
-                     'Chandra', 'ROSAT', 'SUZAKU', 'MAXI', 'INTEGRAL']
+    for mission_name, mission in missions.items():
+        observation_list = aux.GetObservationList(source_name, mission)
+        observation_lists[mission_name] = observation_list
     
     print('============================================================')
     print('Results for source:', source_name)
     header = ['Mission', '#Observations', 'Earliest obs', 'Latest obs']
     spacing = '{:<15} {:<15} {:<15} {:<15}'
-                        
     print(spacing.format(*header))
     
-    for obs_list, mission_name in zip(obs_list_array, mission_names_array):
-        
-        earliest_mjd, latest_mjd = aux.GetEarliestAndLatestFromObsList(obs_list)
+    for mission_name, observation_list in observation_lists.items():
+        earliest_mjd, latest_mjd = aux.GetEarliestAndLatestFromObsList(observation_list)
         earliest = round(aux.mjd2year(earliest_mjd), 3)
         latest = round(aux.mjd2year(latest_mjd), 3)
         try:
-            row = [mission_name, len(obs_list), earliest, latest]
+            row = [mission_name, len(observation_list), earliest, latest]
         except TypeError: #Nontype has no length
             row = [mission_name, 'N/A', 'N/A', 'N/A']
         print(spacing.format(*row))
     print('============================================================')
-    
-    
-def PlotAllFluxes(source_name):
-    Query(source_name)
+
+
+def PlotAllFluxes(source_name):    
     def PlotAllFluxesXMM(source_name):
         observation_list = xmm.GetObservationList(source_name)
         if observation_list == None:
@@ -138,11 +113,11 @@ def PlotAllFluxes(source_name):
             mos2_flux_err = 'M2_{}_FLUX_ERROR'.format(i)
             
             ax[0].errorbar(df['START_TIME'], df[pn_flux], yerr=df[pn_flux_err],
-                         capsize=0.5, marker='None', ls='none', label=pn_flux)
+                         capsize=0.5, marker='None', ls='none', label=pn_flux, c='b')
             ax[1].errorbar(df['START_TIME'], df[mos1_flux], yerr=df[mos1_flux_err],
-                         capsize=0.5, marker='None', ls='none', label=mos1_flux)
+                         capsize=0.5, marker='None', ls='none', label=mos1_flux, c='b')
             ax[2].errorbar(df['START_TIME'], df[mos2_flux], yerr=df[mos2_flux_err],
-                         capsize=0.5, marker='None', ls='none', label=mos2_flux)
+                         capsize=0.5, marker='None', ls='none', label=mos2_flux, c='b')
     
         ax[0].set_ylabel('XMM PN \n Flux $\mathrm{erg \ s^{-1}}$')
         ax[1].set_ylabel('XMM MOS1 \n Flux $\mathrm{erg \ s^{-1}}$')
@@ -180,10 +155,9 @@ def NICERComplete(source_name):
     aux.CreateListFile('sources/{}/nicer/xti'.format(source_name), 'evt')
     nicer.xselect(source_name)
 
-
 #FOR NGC1313 SPECIFY SPECIFIC COOORDS!
-source_name = 'NGC1313'
+# source_name = 'NGC1313'
 # swift_downloader.Complete(source_name)
 # NICERComplete(source_name)
 # PlotAllFluxes(source_name)
-Query(source_name)
+# Query(source_name)

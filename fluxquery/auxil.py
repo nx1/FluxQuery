@@ -6,7 +6,7 @@ Created on Thu Jun  6 12:24:26 2019
 @author: nk7g14
 This file hold various auxilery functions used in FluxQuery.
 """
-
+#TODO change name to utils
 import os
 import urllib.request
 import shutil
@@ -17,10 +17,11 @@ from pathlib import Path
 import gzip
 import tarfile
 import logging
+from collections import OrderedDict
 
 from astropy.time import Time
 import matplotlib.pyplot as plt
-
+from astroquery.heasarc import Heasarc as h
 
 logging.basicConfig(level=logging.DEBUG, format=' %(asctime)s -- %(message)s')
 
@@ -29,6 +30,14 @@ s2year = lambda times: times/60/60/24/365.25
 s2mjd = lambda times: times / 86400.0
 
 
+def GetObservationList(source_name, mission):
+    try:
+        logging.debug('Querying Heasarc {} for source {}'.format(mission, source_name))
+        obs_list = h.query_object(source_name, mission=mission, fields='All', resultmax=3000)
+        return obs_list
+    except:
+        logging.debug('Failed to get {} observation list'.format(mission))
+        return None
 
 def GetEarliestAndLatestFromObsList(observation_list):
         try:
