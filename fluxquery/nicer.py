@@ -44,7 +44,7 @@ import auxil as aux
 class NICER:
     def __init__(self):
         super(NICER, self).__init__()
-        self.nicer_obs_list = aux.GetObservationList(self.source_name, 'nicermastr')
+        self.NICER_OBS_LIST = aux.GetObservationList(self.SOURCE_NAME, 'nicermastr')
         
         
     def NICER_AppendFolderToObsList(self):
@@ -53,14 +53,15 @@ class NICER:
         structure of DDDD-MM and so in order to find the right folder
         for a given observation we need to convert MJD into this format.
         '''
-        time_column = np.array(self.nicer_obs_list['TIME'], dtype=float)
+        logging.debug('Appending DDDD-MM to NICER observation_list')
+        time_column = np.array(self.NICER_OBS_LIST['TIME'], dtype=float)
         times = Time(time_column, format='mjd')
         times_iso = times.iso
         for i, time in enumerate(times_iso):
             result = re.findall(r'\d\d\d\d-\d\d', time)[0]
             result = result.replace('-', '_')
             times_iso[i] = result
-        self.nicer_obs_list['FOLDER'] = times_iso #Corresponding folder for fetching data
+        self.NICER_OBS_LIST['FOLDER'] = times_iso #Corresponding folder for fetching data
 
         
     def NICER_DownloadEventFiles(self):
@@ -68,32 +69,34 @@ class NICER:
         Downloads all cleaned event files from NiCER Archive
         '''
         cwd = os.getcwd()   #Current Working Directory
-        if self.nicer_obs_list == None:
+        if self.NICER_OBS_LIST == None:
             return logging.debug('No observation_list found, nothing to download')
         else:
             pass
     
-        for row in self.nicer_obs_list:
+        for row in self.NICER_OBS_LIST:
             obsID = row['OBSID']
             folder = row['FOLDER']
             logging.debug('Downloading %s', obsID)
             url_cl_evt = 'https://heasarc.gsfc.nasa.gov/FTP/nicer/data/obs/{}/{}/xti/event_cl/ni{}_0mpu7_cl.evt.gz'.format(folder, obsID, obsID)
-            url_cl_savepath = '{}/sources/{}/nicer/xti/ni{}_0mpu7_cl.evt.gz'.format(cwd, self.source_name, obsID)
+            url_cl_savepath = '{}/sources/{}/nicer/xti/ni{}_0mpu7_cl.evt.gz'.format(cwd, self.SOURCE_NAME, obsID)
             aux.FetchFile(url_cl_evt, url_cl_savepath)
-    
+
+
     def NICER_xselect(self):
-        lc_path = 'sources/{}/nicer/xti/lightcurve.lc'.format(self.source_name)
+        lc_path = 'sources/{}/nicer/xti/lightcurve.lc'.format(self.SOURCE_NAME)
         if Path(lc_path).is_file():
             return logging.debug('Nicer lightcurve file already exists: %s', lc_path)
         else:
             pass
         home_dir = os.getcwd()
-        os.chdir('sources/{}/nicer/xti'.format(self.source_name))
-    
+        os.chdir('sources/{}/nicer/xti'.format(self.SOURCE_NAME))
+        
+        #TODO MAKE THESE PARAMETERS AJUSTABLE POSSIBLY in object settings
         binsize = 100   #Binsize in seconds
         low_cutoff = 200 #Low end cutoff frequency in eV
         high_cutoff = 1000 #High end cutoff frequency in eV
-    
+        
         script_file = open('script.xcm', 'w')
     
         script_text = '''NICER
@@ -116,14 +119,14 @@ class NICER:
         """
         Obtains the earliest time
         """
-        time_column = np.array(self.nicer_obs_list['TIME'], dtype=float)
+        time_column = np.array(self.NICER_OBS_LIST['TIME'], dtype=float)
         zero_time = np.min(time_column)
         return zero_time
     
     def NICER_ReadLightCurve(self):
         df = pd.DataFrame()
         zero_time = self.NICER_GetZeroTime()
-        lightcurve_path = 'sources/{}/nicer/xti/lightcurve.lc'.format(self.source_name)
+        lightcurve_path = 'sources/{}/nicer/xti/lightcurve.lc'.format(self.SOURCE_NAME)
         data = fits.open(lightcurve_path)
         
         time = np.array(data[1].data['TIME'], dtype='float')
@@ -142,13 +145,13 @@ class NICER:
     
     def NICER_CleanUpgzFiles(self):
         logging.debug('Cleaning NICER gz files')
-        aux.UnzipAllgzFiles('sources/{}/nicer/xti'.format(self.source_name))
-        aux.RemoveAllgzFiles('sources/{}/nicer/xti'.format(self.source_name))
+        aux.UnzipAllgzFiles('sources/{}/nicer/xti'.format(self.SOURCE_NAME))
+        aux.RemoveAllgzFiles('sources/{}/nicer/xti'.format(self.SOURCE_NAME))
     
     def NICER_Complete(self):
         self.NICER_AppendFolderToObsList()
         self.NICER_DownloadEventFiles()
         self.NICER_CleanUpgzFiles()
-        aux.CreateListFile('sources/{}/nicer/xti'.format(self.source_name), 'evt')
+        aux.CreateListFile('sources/{}/nicer/xti'.format(self.SOURCE_NAME), 'evt')
         self.NICER_xselect()
         self.NICER_PlotLightCurve()

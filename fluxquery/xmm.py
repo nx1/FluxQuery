@@ -19,12 +19,11 @@ import auxil as aux
 class XMM:
     def __init__(self):
         super(XMM, self).__init__()
-        self.xmm_obs_list = aux.GetObservationList(self.source_name, 'xmmssc')
-
+        self.XMM_OBS_LIST = aux.GetObservationList(self.SOURCE_NAME, 'xmmssc')
 
     def XMM_GetStartAndEndTimes(self):
-        start_time = np.array(self.xmm_obs_list['TIME'])
-        end_time = np.array(self.xmm_obs_list['END_TIME'])
+        start_time = np.array(self.XMM_OBS_LIST['TIME'])
+        end_time = np.array(self.XMM_OBS_LIST['END_TIME'])
 
         start_end = pd.DataFrame()
         start_end['START_TIME'] = start_time
@@ -34,20 +33,20 @@ class XMM:
 
     def XMM_GetFlux_PN(self):
         pn_flux = pd.DataFrame()
-        pn1 = np.array(self.xmm_obs_list['PN_1_FLUX'])
-        pn1_err = np.array(self.xmm_obs_list['PN_1_FLUX_ERROR'])
-        pn2 = np.array(self.xmm_obs_list['PN_2_FLUX'])
-        pn2_err = np.array(self.xmm_obs_list['PN_2_FLUX_ERROR'])
-        pn3 = np.array(self.xmm_obs_list['PN_3_FLUX'])
-        pn3_err = np.array(self.xmm_obs_list['PN_3_FLUX_ERROR'])
-        pn4 = np.array(self.xmm_obs_list['PN_4_FLUX'])
-        pn4_err = np.array(self.xmm_obs_list['PN_4_FLUX_ERROR'])
-        pn5 = np.array(self.xmm_obs_list['PN_5_FLUX'])
-        pn5_err = np.array(self.xmm_obs_list['PN_5_FLUX_ERROR'])
-        pn8 = np.array(self.xmm_obs_list['PN_8_FLUX'])
-        pn8_err = np.array(self.xmm_obs_list['PN_8_FLUX_ERROR'])
-        pn9 = np.array(self.xmm_obs_list['PN_9_FLUX'])
-        pn9_err = np.array(self.xmm_obs_list['PN_9_FLUX_ERROR'])
+        pn1 = np.array(self.XMM_OBS_LIST['PN_1_FLUX'])
+        pn1_err = np.array(self.XMM_OBS_LIST['PN_1_FLUX_ERROR'])
+        pn2 = np.array(self.XMM_OBS_LIST['PN_2_FLUX'])
+        pn2_err = np.array(self.XMM_OBS_LIST['PN_2_FLUX_ERROR'])
+        pn3 = np.array(self.XMM_OBS_LIST['PN_3_FLUX'])
+        pn3_err = np.array(self.XMM_OBS_LIST['PN_3_FLUX_ERROR'])
+        pn4 = np.array(self.XMM_OBS_LIST['PN_4_FLUX'])
+        pn4_err = np.array(self.XMM_OBS_LIST['PN_4_FLUX_ERROR'])
+        pn5 = np.array(self.XMM_OBS_LIST['PN_5_FLUX'])
+        pn5_err = np.array(self.XMM_OBS_LIST['PN_5_FLUX_ERROR'])
+        pn8 = np.array(self.XMM_OBS_LIST['PN_8_FLUX'])
+        pn8_err = np.array(self.XMM_OBS_LIST['PN_8_FLUX_ERROR'])
+        pn9 = np.array(self.XMM_OBS_LIST['PN_9_FLUX'])
+        pn9_err = np.array(self.XMM_OBS_LIST['PN_9_FLUX_ERROR'])
 
         pn_flux['PN_1_FLUX'] = pn1
         pn_flux['PN_1_FLUX_ERROR'] = pn1_err
@@ -68,20 +67,20 @@ class XMM:
 
     def XMM_GetFlux_MOS1(self):
         mos1_flux = pd.DataFrame()
-        mos1_1 = np.array(self.xmm_obs_list['M1_1_FLUX'])
-        mos1_1_err = np.array(self.xmm_obs_list['M1_1_FLUX_ERROR'])
-        mos1_2 = np.array(self.xmm_obs_list['M1_2_FLUX'])
-        mos1_2_err = np.array(self.xmm_obs_list['M1_2_FLUX_ERROR'])
-        mos1_3 = np.array(self.xmm_obs_list['M1_3_FLUX'])
-        mos1_3_err = np.array(self.xmm_obs_list['M1_3_FLUX_ERROR'])
-        mos1_4 = np.array(self.xmm_obs_list['M1_4_FLUX'])
-        mos1_4_err = np.array(self.xmm_obs_list['M1_4_FLUX_ERROR'])
-        mos1_5 = np.array(self.xmm_obs_list['M1_5_FLUX'])
-        mos1_5_err = np.array(self.xmm_obs_list['M1_5_FLUX_ERROR'])
-        mos1_8 = np.array(self.xmm_obs_list['M1_8_FLUX'])
-        mos1_8_err = np.array(self.xmm_obs_list['M1_8_FLUX_ERROR'])
-        mos1_9 = np.array(self.xmm_obs_list['M1_9_FLUX'])
-        mos1_9_err = np.array(self.xmm_obs_list['M1_9_FLUX_ERROR'])
+        mos1_1 = np.array(self.XMM_OBS_LIST['M1_1_FLUX'])
+        mos1_1_err = np.array(self.XMM_OBS_LIST['M1_1_FLUX_ERROR'])
+        mos1_2 = np.array(self.XMM_OBS_LIST['M1_2_FLUX'])
+        mos1_2_err = np.array(self.XMM_OBS_LIST['M1_2_FLUX_ERROR'])
+        mos1_3 = np.array(self.XMM_OBS_LIST['M1_3_FLUX'])
+        mos1_3_err = np.array(self.XMM_OBS_LIST['M1_3_FLUX_ERROR'])
+        mos1_4 = np.array(self.XMM_OBS_LIST['M1_4_FLUX'])
+        mos1_4_err = np.array(self.XMM_OBS_LIST['M1_4_FLUX_ERROR'])
+        mos1_5 = np.array(self.XMM_OBS_LIST['M1_5_FLUX'])
+        mos1_5_err = np.array(self.XMM_OBS_LIST['M1_5_FLUX_ERROR'])
+        mos1_8 = np.array(self.XMM_OBS_LIST['M1_8_FLUX'])
+        mos1_8_err = np.array(self.XMM_OBS_LIST['M1_8_FLUX_ERROR'])
+        mos1_9 = np.array(self.XMM_OBS_LIST['M1_9_FLUX'])
+        mos1_9_err = np.array(self.XMM_OBS_LIST['M1_9_FLUX_ERROR'])
 
         mos1_flux['M1_1_FLUX'] = mos1_1
         mos1_flux['M1_1_FLUX_ERROR'] = mos1_1_err
@@ -103,20 +102,20 @@ class XMM:
 
     def XMM_GetFlux_MOS2(self):
         mos2_flux = pd.DataFrame()
-        mos2_1 = np.array(self.xmm_obs_list['M2_1_FLUX'])
-        mos2_1_err = np.array(self.xmm_obs_list['M2_1_FLUX_ERROR'])
-        mos2_2 = np.array(self.xmm_obs_list['M2_2_FLUX'])
-        mos2_2_err = np.array(self.xmm_obs_list['M2_2_FLUX_ERROR'])
-        mos2_3 = np.array(self.xmm_obs_list['M2_3_FLUX'])
-        mos2_3_err = np.array(self.xmm_obs_list['M2_3_FLUX_ERROR'])
-        mos2_4 = np.array(self.xmm_obs_list['M2_4_FLUX'])
-        mos2_4_err = np.array(self.xmm_obs_list['M2_4_FLUX_ERROR'])
-        mos2_5 = np.array(self.xmm_obs_list['M2_5_FLUX'])
-        mos2_5_err = np.array(self.xmm_obs_list['M2_5_FLUX_ERROR'])
-        mos2_8 = np.array(self.xmm_obs_list['M2_8_FLUX'])
-        mos2_8_err = np.array(self.xmm_obs_list['M2_8_FLUX_ERROR'])
-        mos2_9 = np.array(self.xmm_obs_list['M2_9_FLUX'])
-        mos2_9_err = np.array(self.xmm_obs_list['M2_9_FLUX_ERROR'])
+        mos2_1 = np.array(self.XMM_OBS_LIST['M2_1_FLUX'])
+        mos2_1_err = np.array(self.XMM_OBS_LIST['M2_1_FLUX_ERROR'])
+        mos2_2 = np.array(self.XMM_OBS_LIST['M2_2_FLUX'])
+        mos2_2_err = np.array(self.XMM_OBS_LIST['M2_2_FLUX_ERROR'])
+        mos2_3 = np.array(self.XMM_OBS_LIST['M2_3_FLUX'])
+        mos2_3_err = np.array(self.XMM_OBS_LIST['M2_3_FLUX_ERROR'])
+        mos2_4 = np.array(self.XMM_OBS_LIST['M2_4_FLUX'])
+        mos2_4_err = np.array(self.XMM_OBS_LIST['M2_4_FLUX_ERROR'])
+        mos2_5 = np.array(self.XMM_OBS_LIST['M2_5_FLUX'])
+        mos2_5_err = np.array(self.XMM_OBS_LIST['M2_5_FLUX_ERROR'])
+        mos2_8 = np.array(self.XMM_OBS_LIST['M2_8_FLUX'])
+        mos2_8_err = np.array(self.XMM_OBS_LIST['M2_8_FLUX_ERROR'])
+        mos2_9 = np.array(self.XMM_OBS_LIST['M2_9_FLUX'])
+        mos2_9_err = np.array(self.XMM_OBS_LIST['M2_9_FLUX_ERROR'])
 
         mos2_flux['M2_1_FLUX'] = mos2_1
         mos2_flux['M2_1_FLUX_ERROR'] = mos2_1_err
@@ -163,4 +162,5 @@ class XMM:
         start_end = self.XMM_GetStartAndEndTimes()
         lightcurve = pd.concat((start_end, flux_df), axis=1)
         lightcurve = lightcurve.sort_values(by='START_TIME')
+        self.LIGHTCURVE_XMM = lightcurve
         return lightcurve
