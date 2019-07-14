@@ -21,56 +21,46 @@ import auxil as aux
 class SWIFT:
     def __init__(self):
         super(SWIFT, self).__init__()
-        self.swift_obs_list = aux.GetObservationList(self.SOURCE_NAME, 'swiftmastr')
-
-
-    def SWIFT_CreateSaveDirectories(SOURCE_NAME):
-        os.makedirs('sources', exist_ok=True)
-        os.makedirs('sources/{}'.format(SOURCE_NAME), exist_ok=True)
-        os.makedirs('sources/{}/swift'.format(SOURCE_NAME), exist_ok=True)
-        os.makedirs('sources/{}/swift/xrt'.format(SOURCE_NAME), exist_ok=True)
-        os.makedirs('sources/{}/swift/uvot'.format(SOURCE_NAME), exist_ok=True)
-        os.makedirs('sources/{}/swift/uvot/img'.format(SOURCE_NAME), exist_ok=True)
-        os.makedirs('sources/{}/swift/uvot/cat'.format(SOURCE_NAME), exist_ok=True)
-    
-    
-    def SWIFT_DownloadEventFiles(SOURCE_NAME, observation_ids):
+        self.SWIFT_OBS_LIST = aux.GetObservationList(self.SOURCE_NAME, 'swiftmastr')
+        self.LIGHTCURVE_SWIFT_UVOT = None
+    def SWIFT_DownloadEventFiles(self):
         '''
-        Downloads (level 2) Screened event files for given list of observation IDs
+        Downloads (level 2) Screened event files from UK Swift SSDC
         '''
         cwd = os.getcwd()   #Current Working Directory
     
-        for obsID in observation_ids:
+        for i, obsID in enumerate(self.SWIFT_OBS_LIST['OBSID']):
+
             url_xrt = 'http://www.swift.ac.uk/archive/reproc/{}/xrt/event/sw{}xpcw3po_cl.evt.gz'.format(obsID, obsID)
-            savedir_xrt = '{}/sources/{}/swift/xrt/sw{}xpcw3po_cl.evt.gz'.format(cwd, SOURCE_NAME, obsID)
+            savedir_xrt = '{}/sources/{}/swift/xrt/sw{}xpcw3po_cl.evt.gz'.format(cwd, self.SOURCE_NAME, obsID)
     
             url_uvot_cat = 'http://www.swift.ac.uk/archive/reproc/{}/uvot/products/sw{}u.cat.gz'.format(obsID, obsID)
-            savedir_uvot_cat = '{}/sources/{}/swift/uvot/cat/sw{}u.cat.gz'.format(cwd, SOURCE_NAME, obsID)
+            savedir_uvot_cat = '{}/sources/{}/swift/uvot/cat/sw{}u.cat.gz'.format(cwd, self.SOURCE_NAME, obsID)
     
             url_uvot_img = 'http://www.swift.ac.uk/archive/reproc/{}/uvot/image/sw{}uuu_sk.img.gz'.format(obsID, obsID)
-            savedir_uvot_img = '{}/sources/{}/swift/uvot/img/sw{}uuu_sk.img.gz'.format(cwd, SOURCE_NAME, obsID)
+            savedir_uvot_img = '{}/sources/{}/swift/uvot/img/sw{}uuu_sk.img.gz'.format(cwd, self.SOURCE_NAME, obsID)
     
             aux.FetchFile(url_xrt, savedir_xrt)
             aux.FetchFile(url_uvot_cat, savedir_uvot_cat)
             aux.FetchFile(url_uvot_img, savedir_uvot_img)
            # aux.FetchFile('http://www.swift.ac.uk/archive/reproc/%s/uvot/image/sw%suuu_rw.img.gz' % (obsID,obsID),
-           #           '%s/%s/uvot/img/sw%suuu_rw.img.gz' % (cwd, SOURCE_NAME, obsID))
+           #           '%s/%s/uvot/img/sw%suuu_rw.img.gz' % (cwd, self.SOURCE_NAME, obsID))
     
     
-    def SWIFT_CleanUpgzFiles(SOURCE_NAME):
-        aux.UnzipAllgzFiles('sources/{}/swift/xrt'.format(SOURCE_NAME))
-        aux.RemoveAllgzFiles('sources/{}/swift/xrt'.format(SOURCE_NAME))
+    def SWIFT_CleanUpgzFiles(self):
+        aux.UnzipAllgzFiles('sources/{}/swift/xrt'.format(self.SOURCE_NAME))
+        aux.RemoveAllgzFiles('sources/{}/swift/xrt'.format(self.SOURCE_NAME))
     
-        aux.UnzipAllgzFiles('sources/{}/swift/uvot/img'.format(SOURCE_NAME))
-        aux.RemoveAllgzFiles('sources/{}/swift/uvot/img'.format(SOURCE_NAME))
+        aux.UnzipAllgzFiles('sources/{}/swift/uvot/img'.format(self.SOURCE_NAME))
+        aux.RemoveAllgzFiles('sources/{}/swift/uvot/img'.format(self.SOURCE_NAME))
     
-        aux.UnzipAllgzFiles('sources/{}/swift/uvot/cat'.format(SOURCE_NAME))
-        aux.RemoveAllgzFiles('sources/{}/swift/uvot/cat'.format(SOURCE_NAME))
+        aux.UnzipAllgzFiles('sources/{}/swift/uvot/cat'.format(self.SOURCE_NAME))
+        aux.RemoveAllgzFiles('sources/{}/swift/uvot/cat'.format(self.SOURCE_NAME))
     
     
     def SWIFT_GetStartTimes(self):
-        obsID = np.array(self.swift_obs_list['OBSID'], dtype='str')
-        start_time = np.array(self.swift_obs_list['START_TIME'])
+        obsID = np.array(self.SWIFT_OBS_LIST['OBSID'], dtype='str')
+        start_time = np.array(self.SWIFT_OBS_LIST['START_TIME'])
         df_starts = pd.DataFrame()
         df_starts['OBSID'] = obsID
         df_starts['START_TIME'] = start_time
@@ -82,6 +72,27 @@ class SWIFT:
 
 
     def SWIFT_UVOT_GetFluxesFromCatFile(self, file, radius):
+        """
+        This function is used to obtain a crude value of the uv flux from a
+        source, it does this by checking the prebuilt .cat file which contains
+        a list of RA, DEC and FLUX. square of a given 'radius' centered on
+        the source's RA and DEC is used to mask this list and the average of
+        all the rows inside the box is taken.
+
+        Parameters
+        ----------
+        file :
+            .cat file path
+        radius :
+            Size of box in degrees that we wish to query, may change this
+        to a circle later
+
+        Returns
+        -------
+        df : Pandas Dataframe
+            Dataframe containing the fluxes within the defined square.
+
+        """
         df = pd.DataFrame()
         data = fits.open(file)
 
@@ -140,5 +151,9 @@ class SWIFT:
         df = pd.DataFrame.from_records(rows)
         df.columns = ['OBSID', 'START_TIME', 'MEAN_FLUX', 'MEAN_FLUX_ERR']
         df = df.sort_values(by=['START_TIME'])
+
+        df = df.drop('Unnamed: 0', axis=1)
+        df = df.reset_index()   
         df.to_csv('sources/{}/swift/uvot/cat/flux_df.csv'.format(self.SOURCE_NAME))
+        self.LIGHTCURVE_SWIFT_UVOT = df
         return df

@@ -18,6 +18,7 @@ import gzip
 import tarfile
 import logging
 from collections import OrderedDict
+from tqdm import tqdm
 
 from astropy.time import Time
 import matplotlib.pyplot as plt
@@ -109,8 +110,10 @@ def UnzipAllgzFiles(path):
     Unzips all the gz files in a given path
     '''
     gz_files = glob.glob(path + '/*.gz')
-    for file in gz_files:
-        logging.debug('Unzipping %s', file)
+    pbar = tqdm(gz_files)
+    for file in pbar:
+        # logging.debug('Unzipping %s', file)
+        pbar.set_description('Unzipping %s' % file)
         with gzip.open(file, 'rb') as f_in:
             with open(file[:-3], 'wb') as f_out:
                 shutil.copyfileobj(f_in, f_out)
@@ -120,8 +123,10 @@ def RemoveAllgzFiles(path):
     Removes all gz files in a given path
     '''
     gz_files = glob.glob(path + '/*.gz')
-    for file in gz_files:
-        logging.debug('Removing %s', file)
+    pbar = tqdm(gz_files)
+    for file in pbar:
+        # logging.debug('Removing %s', file)
+        pbar.set_description('Removing %s' % file)
         os.remove(file)
 
 def UnzipalltarFiles(path):
@@ -129,9 +134,10 @@ def UnzipalltarFiles(path):
     Unzips all tar files in a given path
     '''
     tar_files = glob.glob(path + '/*.tar')
-    
-    for file in tar_files:
-        logging.debug('Unzipping %s', file)
+    pbar = tqdm(tar_files)
+    for file in pbar:
+        # logging.debug('Unzipping %s', file)
+        pbar.set_description('Unzipping %s' % file)
         file = tarfile.open(name=file, mode='r')
         file.extractall()
         file.close()
@@ -141,8 +147,10 @@ def RemoveAlltarFiles(path):
     Removes all tar files in a given path
     '''
     tar_files = glob.glob(path + '/*.tar')
-    for file in tar_files:
-        logging.debug('Removing %s', file)
+    pbar = tqdm(tar_files)
+    for file in pbar:
+        # logging.debug('Removing %s', file)
+        pbar.set_description('Removing %s' % file)
         os.remove(file)
 
 def CreateListFile(path, extension):
