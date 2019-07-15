@@ -144,22 +144,25 @@ class NICER:
         df['TIME_MJD'] = time_mjd
         df['RATE'] = np.array(data[1].data['RATE'], dtype='float')
         df['RATE_ERROR'] = np.array(data[1].data['ERROR'], dtype='float')
+        self.LIGHTCURVE_NICER = df
         return df
-    
-    def NICER_PlotLightCurve(self):
-        lc = self.NICER_ReadLightCurve()
-        plt.errorbar(x=lc['TIME_MJD'], y=lc['RATE'], yerr=lc['RATE_ERROR'],
-                     capsize=0.5, marker='None', ls='none', label='NiCER')
-    
+
     def NICER_CleanUpgzFiles(self):
         logging.debug('Cleaning NICER gz files')
         aux.UnzipAllgzFiles('sources/{}/nicer/xti'.format(self.SOURCE_NAME))
         aux.RemoveAllgzFiles('sources/{}/nicer/xti'.format(self.SOURCE_NAME))
-    
-    def NICER_Complete(self):
+
+    def NICER_PlotLightCurve(self):
         self.NICER_AppendFolderToObsList()
         self.NICER_DownloadEventFiles()
         self.NICER_CleanUpgzFiles()
         aux.CreateListFile('sources/{}/nicer/xti'.format(self.SOURCE_NAME), 'evt')
         self.NICER_xselect()
-        self.NICER_PlotLightCurve()
+        lc = self.NICER_ReadLightCurve()
+        
+        plt.figure(figsize=(15,4))
+        plt.errorbar(x=lc['TIME_MJD'], y=lc['RATE'], yerr=lc['RATE_ERROR'],
+                     capsize=0.5, marker='None', ls='none', label='NiCER')
+        plt.title('NiCER')
+        plt.xlabel('Time (MJD)')
+        plt.ylabel('RATE')

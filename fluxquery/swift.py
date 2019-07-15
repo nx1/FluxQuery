@@ -12,6 +12,7 @@ import logging
 import glob
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 from tqdm import tqdm
 from astropy.io import fits
@@ -154,14 +155,22 @@ class SWIFT:
         df.columns = ['OBSID', 'START_TIME', 'MEAN_FLUX', 'MEAN_FLUX_ERR']
         df = df.sort_values(by=['START_TIME'])
 
-        df = df.drop('Unnamed: 0', axis=1)
+        # df = df.drop('Unnamed: 0', axis=1)
         df = df.reset_index()   
         df.to_csv('sources/{}/swift/uvot/cat/flux_df.csv'.format(self.SOURCE_NAME))
         self.LIGHTCURVE_SWIFT_UVOT = df
         return df
     
     def SWIFT_UVOT_PlotLightCurve(self):
-        self.SWIFT_DownloadEventFiles()
-        self.SWIFT_CleanUpgzFiles()
-        self.SWIFT_UVOT_GetAllFluxes()
+        # self.SWIFT_DownloadEventFiles()
+        # self.SWIFT_CleanUpgzFiles()
+        lc = self.SWIFT_UVOT_GetAllFluxes()
+        
+        plt.figure(figsize=(15,4))
+        plt.errorbar(lc['START_TIME'], lc['MEAN_FLUX'], lc['MEAN_FLUX_ERR'],
+                     label = 'MOS1: 0.2 - 12', fmt='none')
+
+        plt.title('SWIFT_UVOT')
+        plt.ylabel('Flux (erg/s/cm^2/angstrom)')
+        plt.xlabel('Time (MJD)')
         pass
