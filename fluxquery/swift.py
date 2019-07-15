@@ -23,6 +23,8 @@ class SWIFT:
         super(SWIFT, self).__init__()
         self.SWIFT_OBS_LIST = aux.GetObservationList(self.SOURCE_NAME, 'swiftmastr')
         self.LIGHTCURVE_SWIFT_UVOT = None
+
+
     def SWIFT_DownloadEventFiles(self):
         '''
         Downloads (level 2) Screened event files from UK Swift SSDC
@@ -157,3 +159,9 @@ class SWIFT:
         df.to_csv('sources/{}/swift/uvot/cat/flux_df.csv'.format(self.SOURCE_NAME))
         self.LIGHTCURVE_SWIFT_UVOT = df
         return df
+    
+    def SWIFT_UVOT_PlotLightCurve(self):
+        self.SWIFT_DownloadEventFiles()
+        self.SWIFT_CleanUpgzFiles()
+        self.SWIFT_UVOT_GetAllFluxes()
+        pass

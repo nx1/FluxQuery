@@ -13,6 +13,7 @@ master catalogue. #TODO
 """
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 import auxil as aux
 
@@ -164,3 +165,21 @@ class XMM:
         lightcurve = lightcurve.sort_values(by='START_TIME')
         self.LIGHTCURVE_XMM = lightcurve
         return lightcurve
+    
+    def XMM_PlotLightCurve(self):
+
+        self.XMM_GetLightcurve()
+        lc = self.LIGHTCURVE_XMM
+        plt.figure(figsize=(15,4))
+        plt.errorbar(lc['START_TIME'], lc['M1_8_FLUX'], lc['M1_8_FLUX_ERROR'],
+                     label = 'MOS1: 0.2 - 12', fmt='none')
+        plt.errorbar(lc['START_TIME'], lc['M2_8_FLUX'], lc['M2_8_FLUX_ERROR'],
+                     label = 'MOS2: 0.2 - 12', fmt='none')
+        plt.errorbar(lc['START_TIME'], lc['PN_8_FLUX'], lc['PN_8_FLUX_ERROR'],
+                     label = 'PN: 0.2 - 12', fmt='none')
+        plt.title('XMMSSC')
+        plt.ylabel('Flux (erg/cm^2/s)')
+        plt.xlabel('Time (MJD)')
+        
+        plt.legend()
+        

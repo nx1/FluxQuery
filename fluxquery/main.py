@@ -1,163 +1,174 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Thu Jun  6 12:21:30 2019
+Created on Wed Jul  3 11:58:07 2019
 
 @author: nk7g14
-FluxQuery is an attempt to provide long term x-ray light curves for a given
-source by querying a variety of x-ray missions, historical and current.
-
-How it will work:
-    fluxquery.query('NGC1313') #Returns a missions and observations etc
-    fluxquery.xray.lightcurve('NGC1313')
-    fluxquery
-
-USEFUL COMMANDS
-h.query_mission_list()
-table.colnames
-table.show_in_browser(jsviewer=True)
-
-Missions with time given as ['TIME']:
-    xmmssc, NUMASTER, CHANMASTER, RASS2RXS, fermilasp, suzaxislog, nicermastr
-Missions with time given as ['START_TIME']:
-    swiftmastr, mpcraw
-    
-The source position (in the XRT co-ordinate frame) used for these products was:
-RA (J2000.0) = 49.5839 degrees, Dec (J2000.0) =-66.4864 degrees.
-
-______ _            _____                       
-|  ___| |          |  _  |                      
-| |_  | |_   ___  _| | | |_   _  ___ _ __ _   _ 
-|  _| | | | | \ \/ / | | | | | |/ _ \ '__| | | |
-| |   | | |_| |>  <\ \/' / |_| |  __/ |  | |_| |
-\_|   |_|\__,_/_/\_\\_/\_\\__,_|\___|_|   \__, |
-                                           __/ |
-                                          |___/	0.1
 """
-#TODO change function names to lowercase_underscore
-import matplotlib.pyplot as plt
-import pandas as pd
-import logging
+
+import os
 from collections import OrderedDict
+
+from astropy.coordinates import SkyCoord
 
 import auxil as aux
 import xmm
 import swift
-import swift_downloader
-import swift_uvot
 import nicer
+import rxte
 
-logging.basicConfig(level=logging.NOTSET, format=' %(asctime)s -- %(message)s')
-logger = logging.getLogger('my-logger')
-logger.propagate = False
-
-def Query(source_name):
-    missions = OrderedDict([
-            ('XMM-Newton','xmmssc'),
-            ('Swift','swiftmstr'),
-            ('NiCER', 'nicermastr'),
-            ('RXTE', 'xtemaster'),
-            ('NuSTAR', 'numaster'),
-            ('Chandra', 'chanmaster'),
-            ('ROSAT', 'rass2rxs'),
-            ('SUZAKU', 'suzamaster'),
-            ('MAXI', 'maximaster'),
-            ('INTEGRAL', 'intscwpub')
-            ])
-    
-    observation_lists = OrderedDict()
-    
-    for mission_name, mission in missions.items():
-        observation_list = aux.GetObservationList(source_name, mission)
-        observation_lists[mission_name] = observation_list
-    
-    print('============================================================')
-    print('Results for source:', source_name)
-    header = ['Mission', '#Observations', 'Earliest obs', 'Latest obs']
-    spacing = '{:<15} {:<15} {:<15} {:<15}'
-    print(spacing.format(*header))
-    
-    for mission_name, observation_list in observation_lists.items():
-        earliest_mjd, latest_mjd = aux.GetEarliestAndLatestFromObsList(observation_list)
-        earliest = round(aux.mjd2year(earliest_mjd), 3)
-        latest = round(aux.mjd2year(latest_mjd), 3)
-        try:
-            row = [mission_name, len(observation_list), earliest, latest]
-        except TypeError: #Nontype has no length
-            row = [mission_name, 'N/A', 'N/A', 'N/A']
-        print(spacing.format(*row))
-    print('============================================================')
-
-
-def PlotAllFluxes(source_name):    
-    def PlotAllFluxesXMM(source_name):
-        observation_list = xmm.GetObservationList(source_name)
-        if observation_list == None:
-            return print('Observation list not found, exiting.')
-        else:
-            pass
-        start_end = xmm.GetStartAndEndTimesXMM(observation_list)
-        flux = xmm.GetFluxXMM(observation_list)
+class Source(xmm.XMM, swift.SWIFT, nicer.NICER, rxte.RXTE):
+    def __init__(self, SOURCE_NAME):
+        self.SOURCE_NAME = SOURCE_NAME
+        self._CreateSaveDirectories()
         
-        df = pd.concat([start_end, flux], axis=1)
-        df = df.sort_values(by='START_TIME')
-
-        flux_bands = [1, 2, 3, 4, 5, 8, 9]
-        for i in flux_bands:
-            pn_flux = 'PN_{}_FLUX'.format(i)
-            pn_flux_err = 'PN_{}_FLUX_ERROR'.format(i)
-            mos1_flux = 'M1_{}_FLUX'.format(i)
-            mos1_flux_err = 'M1_{}_FLUX_ERROR'.format(i)
-            
-            mos2_flux = 'M2_{}_FLUX'.format(i)
-            mos2_flux_err = 'M2_{}_FLUX_ERROR'.format(i)
-            
-            ax[0].errorbar(df['START_TIME'], df[pn_flux], yerr=df[pn_flux_err],
-                         capsize=0.5, marker='None', ls='none', label=pn_flux, c='b')
-            ax[1].errorbar(df['START_TIME'], df[mos1_flux], yerr=df[mos1_flux_err],
-                         capsize=0.5, marker='None', ls='none', label=mos1_flux, c='b')
-            ax[2].errorbar(df['START_TIME'], df[mos2_flux], yerr=df[mos2_flux_err],
-                         capsize=0.5, marker='None', ls='none', label=mos2_flux, c='b')
-    
-        ax[0].set_ylabel('XMM PN \n Flux $\mathrm{erg \ s^{-1}}$')
-        ax[1].set_ylabel('XMM MOS1 \n Flux $\mathrm{erg \ s^{-1}}$')
-        ax[2].set_ylabel('XMM MOS2 \n Flux $\mathrm{erg \ s^{-1}}$')
-
-        # ax[0].legend()
-        # ax[1].legend()
-        # ax[2].legend()
-    
-    def PlotAllFluxesSWIFTUVOT(source_name):
-        flux_df = swift_uvot.GetAllFluxes(source_name)
+        coords = SkyCoord.from_name(SOURCE_NAME)
+        self.SOURCE_RA = coords.ra.deg
+        self.SOURCE_DEC = coords.dec.deg
         
-        ax[3].set_ylabel('SWIFT UVOT \n Flux $\mathrm{erg \ s^{-1} \ cm^{-2} \ angstrom^{-1}}$')
-        ax[3].errorbar(flux_df['START_TIME'], flux_df['MEAN_FLUX'],
-                      yerr=flux_df['MEAN_FLUX_ERR'], capsize=0.5, marker='None', ls='none')
+        self.LIGHTCURVE_XMM = None
+        self.LIGHTCURVE_SWIFT_UVOT = None
+        self.LIGHTCURVE_SWIFT_XRT = None
+        self.LIGHTCURVE_NICER = None
+        self.LIGHTCURVE_RXTE = None
+        self.LIGHTCURVE_ALL = [self.LIGHTCURVE_XMM, self.LIGHTCURVE_SWIFT_UVOT,
+                            self.LIGHTCURVE_SWIFT_XRT, self.LIGHTCURVE_NICER,
+                            self.LIGHTCURVE_RXTE]
         
-    def PlotAllFluxesNICER(source_name):
-        lc = nicer.ReadLightCurve(source_name)
-        ax[4].set_ylabel('NICER \n Counts')
-        ax[4].set_xlabel('Time (MJD)')
-        ax[4].errorbar(x=lc['TIME_MJD'], y=lc['RATE'], yerr=lc['RATE_ERROR'],
-                 capsize=0.5, marker='None', ls='none', label='NiCER')
-    
-    
-    fig, ax = plt.subplots(5, sharex=True, num=0)
-    plt.suptitle(source_name)
-    PlotAllFluxesXMM(source_name)
-    PlotAllFluxesSWIFTUVOT(source_name)
-    PlotAllFluxesNICER(source_name)
+        super(Source, self).__init__()
+        
+    def __repr__(self):
+        return 'Source(%r RA: %r DEC: %r)' % (self.SOURCE_NAME,
+                      self.SOURCE_RA, self.SOURCE_DEC)
+        
+    def query(self):
+        missions = OrderedDict([
+                ('XMM SSC','xmmssc'),
+                ('XMM Optical SSC','xmmosuss'),
+                ('Swift','swiftmstr'),
+                ('NiCER', 'nicermastr'),
+                ('RXTE', 'xtemaster'),
+                ('NuSTAR', 'numaster'),
+                ('Chandra', 'chanmaster'),
+                ('ROSAT', 'rass2rxs'),
+                ('SUZAKU', 'suzamaster'),
+                ('MAXI', 'maximaster'),
+                ])
+        
+        observation_lists = OrderedDict()
+        
+        for mission_name, mission in missions.items():
+            observation_list = aux.GetObservationList(self.SOURCE_NAME, mission)
+            observation_lists[mission_name] = observation_list
+        
+        print('============================================================')
+        print('Results for source:', self.SOURCE_NAME)
+        header = ['Mission', '#Observations', 'Earliest obs', 'Latest obs']
+        spacing = '{:<15} {:<15} {:<15} {:<15}'
+        print(spacing.format(*header))
+        
+        for mission_name, observation_list in observation_lists.items():
+            earliest_mjd, latest_mjd = aux.GetEarliestAndLatestFromObsList(observation_list)
+            earliest = round(aux.mjd2year(earliest_mjd), 3)
+            latest = round(aux.mjd2year(latest_mjd), 3)
+            try:
+                row = [mission_name, len(observation_list), earliest, latest]
+            except TypeError: #Nontype has no length
+                row = [mission_name, 'N/A', 'N/A', 'N/A']
+            print(spacing.format(*row))
+        print('============================================================')
+        
 
-def NICERComplete(source_name):
-    nicer.CreateSaveDirectories(source_name)
-    nicer.DownloadEventFiles(source_name)
-    nicer.CleanUpgzFiles(source_name)
-    aux.CreateListFile('sources/{}/nicer/xti'.format(source_name), 'evt')
-    nicer.xselect(source_name)
+    def _CreateSaveDirectories(self):
+        #Basic directories
+        os.makedirs('sources', exist_ok=True)
+        os.makedirs('sources/{}'.format(self.SOURCE_NAME), exist_ok=True)
+        #SWIFT Directories
+        os.makedirs('sources/{}/swift'.format(self.SOURCE_NAME), exist_ok=True)
+        os.makedirs('sources/{}/swift/xrt'.format(self.SOURCE_NAME), exist_ok=True)
+        os.makedirs('sources/{}/swift/uvot'.format(self.SOURCE_NAME), exist_ok=True)
+        os.makedirs('sources/{}/swift/uvot/img'.format(self.SOURCE_NAME), exist_ok=True)
+        os.makedirs('sources/{}/swift/uvot/cat'.format(self.SOURCE_NAME), exist_ok=True)
+        #NiCER directories
+        os.makedirs('sources/{}/nicer'.format(self.SOURCE_NAME), exist_ok=True)
+        os.makedirs('sources/{}/nicer/xti'.format(self.SOURCE_NAME), exist_ok=True)
+        #RXTE directories
+        os.makedirs('sources/{}/rxte'.format(self.SOURCE_NAME), exist_ok=True)
 
-#FOR NGC1313 SPECIFY SPECIFIC COOORDS!
-# source_name = 'NGC1313'
-# swift_downloader.Complete(source_name)
-# NICERComplete(source_name)
-# PlotAllFluxes(source_name)
-# Query(source_name)
+
+if __name__ == '__main__':
+    ngc1313 = Source('NGC1313')
+    # m82 = Source('M82')
+    # ngc55 = Source('NGC55')
+    # ngc300 = Source('NGC300')
+    # ngc5907 = Source('NGC5907')
+
+
+
+'''
+#TESTING CODE
+for i in dir(ngc1313):
+    print('ngc1313.'+i+'()')
+
+ngc1313.LIGHTCURVE_ALL
+ngc1313.LIGHTCURVE_NICER
+ngc1313.LIGHTCURVE_RXTE
+ngc1313.LIGHTCURVE_SWIFT_UVOT
+ngc1313.LIGHTCURVE_SWIFT_XRT
+ngc1313.LIGHTCURVE_XMM
+
+ngc1313.SOURCE_DEC
+ngc1313.SOURCE_NAME
+ngc1313.SOURCE_RA
+
+
+ngc1313.NICER_AppendFolderToObsList()
+ngc1313.NICER_CleanUpgzFiles()
+ngc1313.NICER_Complete()
+ngc1313.NICER_DownloadEventFiles()
+ngc1313.NICER_GetZeroTime()
+ngc1313.NICER_OBS_LIST()
+ngc1313.NICER_PlotLightCurve()
+ngc1313.NICER_ReadLightCurve()
+ngc1313.NICER_xselect()
+
+
+ngc1313.RXTE_Complete()
+ngc1313.RXTE_DownloadAllObservations()
+ngc1313.RXTE_GetAllCounts()
+ngc1313.RXTE_GetCounts()
+ngc1313.RXTE_GetCountsQ6VPcu()
+ngc1313.RXTE_GetCountsVpXPcu()
+ngc1313.RXTE_GetCountsXPcu()
+ngc1313.RXTE_GetLightcurve()
+ngc1313.RXTE_GetcountsGood()
+ngc1313.RXTE_MergeDataframeDictionary()
+
+ngc1313.RXTE_OBS_LIST()
+
+
+ngc1313.SWIFT_CleanUpgzFiles()
+ngc1313.SWIFT_CreateSaveDirectories()
+ngc1313.SWIFT_DownloadEventFiles()
+ngc1313.SWIFT_GetStartTimes()
+ngc1313.SWIFT_UVOT_GetAllFluxes()
+ngc1313.SWIFT_UVOT_GetFluxesFromCatFile()
+ngc1313.SWIFT_UVOT_GetObsIDFromCatFile()
+
+
+ngc1313.XMM_GetFlux()
+ngc1313.XMM_GetFlux_MOS1()
+ngc1313.XMM_GetFlux_MOS2()
+ngc1313.XMM_GetFlux_PN()
+ngc1313.XMM_GetLightcurve()
+ngc1313.XMM_GetStartAndEndTimes()
+
+ngc1313.XMM_OBS_LIST
+
+
+ngc1313._CreateSaveDirectories()
+ngc1313._RXTE_DownloadObservation()
+
+ngc1313.query()
+ngc1313.swift_obs_list()
+'''

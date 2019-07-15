@@ -76,12 +76,20 @@ class NICER:
     
         for row in self.NICER_OBS_LIST:
             obsID = row['OBSID']
-            folder = row['FOLDER']
+            try:
+                logging.debug('Tying to find FOLDER column')
+                folder = row['FOLDER']
+            except:
+                logging.debug('Could not find FOLDER column, appending')
+                self.NICER_AppendFolderToObsList()
             logging.debug('Downloading %s', obsID)
             url_cl_evt = 'https://heasarc.gsfc.nasa.gov/FTP/nicer/data/obs/{}/{}/xti/event_cl/ni{}_0mpu7_cl.evt.gz'.format(folder, obsID, obsID)
             url_cl_savepath = '{}/sources/{}/nicer/xti/ni{}_0mpu7_cl.evt.gz'.format(cwd, self.SOURCE_NAME, obsID)
+            
+            url_orb = 'https://heasarc.gsfc.nasa.gov/FTP/nicer/data/obs/{}/{}/auxil/ni{}.orb.gz'.format(folder, obsID, obsID)
+            url_orb_savepath = '{}/sources/{}/nicer/xti/ni{}.orb.gz'.format(cwd, self.SOURCE_NAME, obsID)
             aux.FetchFile(url_cl_evt, url_cl_savepath)
-
+            aux.FetchFile(url_orb, url_orb_savepath)
 
     def NICER_xselect(self):
         lc_path = 'sources/{}/nicer/xti/lightcurve.lc'.format(self.SOURCE_NAME)
