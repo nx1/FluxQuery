@@ -108,7 +108,7 @@ class NICER:
         script_file = open('script.xcm', 'w')
     
         script_text = '''NICER
-    read event "@file.ls"
+    read events "@file.ls"
     ./
     yes
     set binsize {}
@@ -163,6 +163,6 @@ class NICER:
         plt.figure(figsize=(15,4))
         plt.errorbar(x=lc['TIME_MJD'], y=lc['RATE'], yerr=lc['RATE_ERROR'],
                      capsize=0.5, marker='None', ls='none', label='NiCER')
-        plt.title('NiCER')
+        plt.title('NiCER : ' + self.SOURCE_NAME)
         plt.xlabel('Time (MJD)')
         plt.ylabel('RATE')

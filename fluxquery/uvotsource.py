@@ -107,6 +107,7 @@ plt.errorbar(df['START_MJD'], df['RAW_TOT_CNTS'], yerr=df['RAW_TOT_CNTS_ERR'],
 plt.ylim(0, 1.1*max(df['RAW_TOT_CNTS']))
 plt.legend()
 plt.show()
+
 #TOTAL RATE LIGHTCURVE FROM UVOTSOURCE
 plt.figure(figsize=(20,6))
 plt.errorbar(df['START_MJD'], df['RAW_TOT_RATE'], yerr=df['RAW_TOT_RATE_ERR'],

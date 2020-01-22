@@ -4,6 +4,10 @@
 Created on Wed Jul  3 11:58:07 2019
 
 @author: nk7g14
+
+TODO:
+    Add Energy Bands
+    Add Other telescopes
 """
 
 import os
@@ -94,9 +98,12 @@ class Source(xmm.XMM, swift.SWIFT, nicer.NICER, rxte.RXTE):
         os.makedirs('sources/{}/nicer/xti'.format(self.SOURCE_NAME), exist_ok=True)
         #RXTE directories
         os.makedirs('sources/{}/rxte'.format(self.SOURCE_NAME), exist_ok=True)
+        #NuSTAR directories
+        os.makedirs('sources/{}/nustar'.format(self.SOURCE_NAME), exist_ok=True)
 
 
 if __name__ == '__main__':
+    pass
     ngc1313 = Source('NGC1313')
     # m82 = Source('M82')
     # ngc55 = Source('NGC55')

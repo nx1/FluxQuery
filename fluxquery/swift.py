@@ -170,7 +170,7 @@ class SWIFT:
         plt.errorbar(lc['START_TIME'], lc['MEAN_FLUX'], lc['MEAN_FLUX_ERR'],
                      label = 'MOS1: 0.2 - 12', fmt='none')
 
-        plt.title('SWIFT_UVOT')
+        plt.title('SWIFT_UVOT : ' + self.SOURCE_NAME)
         plt.ylabel('Flux (erg/s/cm^2/angstrom)')
         plt.xlabel('Time (MJD)')
         pass

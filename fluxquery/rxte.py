@@ -25,7 +25,7 @@ class RXTE:
         self.RXTE_OBS_LIST = aux.GetObservationList(self.SOURCE_NAME, 'xtemaster')
 
     def _RXTE_DownloadObservation(self, obsID):
-        logging.debug('Downloading RXTE observation: %s', obsID)
+        print('Downloading RXTE observation:', obsID)
         filepath = '/sources/{}/rxte/{}.tar'.format(self.SOURCE_NAME, obsID)
         #RXTE observation IDS have a structure like XXXXX-XX-XX-XX
         #and are saved in folders on the archive with the first bit XXXXX with
@@ -37,7 +37,7 @@ class RXTE:
         folder_exists = Path(filepath_folder).is_file()
         
         if tar_exists or folder_exists:
-            logging.debug('Folder or tar file already exists, not downloading.')
+            print('Folder or tar file already exists, not downloading.')
         else:
             url = 'http://heasarc.gsfc.nasa.gov/cgi-bin/W3Browse/xteTar.pl?obsid={}&prnb={}'.format(obsID, first_bit)
             myfile = requests.get(url, allow_redirects=True)
@@ -45,11 +45,9 @@ class RXTE:
             open(cwd + filepath, 'wb').write(myfile.content)
     
     def RXTE_DownloadAllObservations(self):
-        try:
-            for obsID in self.RXTE_OBS_LIST['OBSID']:
-                self._RXTE_DownloadObservation(obsID, self.SOURCE_NAME)
-        except TypeError:
-            print('No RXTE Observations exists for', self.SOURCE_NAME)
+        for obsID in self.RXTE_OBS_LIST['OBSID']:
+            self._RXTE_DownloadObservation(obsID)
+
             
             
     def RXTE_GetCountsVpXPcu(self, xfl_file):
@@ -173,7 +171,7 @@ class RXTE:
                 df_dict[obsID] = count_df
         return df_dict
 
-    def RXTE_MergeDataframeDictionary(df_dict):
+    def RXTE_MergeDataframeDictionary(self, df_dict):
         df = pd.concat(df_dict.values(), ignore_index=True)
         df = df.sort_values(by=['Time'])
         df = df.reset_index(drop=True)
