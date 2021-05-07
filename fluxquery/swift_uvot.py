@@ -20,9 +20,11 @@ import glob
 import re
 import pandas as pd
 import logging
-import swift
+import fluxquery.swift as swift
 from astropy.coordinates import SkyCoord
 from tqdm import tqdm
+
+import fluxquery.auxil as aux
 
 def GetObsIDFromCatFile(file):
     return re.findall(r'\d{11}', file)[0] #Regex pattern to find 11 digits
@@ -69,8 +71,8 @@ def GetAllFluxes(source_name):
     # source_dec = -66.48639 #NGC1313 HARDCODED
     search_radius = 0.1
     
-    catobsID = swift.GetObservationID(source_name)
-    observation_list = swift.GetObservationList(source_name)
+    # catobsID = swift.GetObservationID(source_name)
+    observation_list = aux.GetObservationList(source_name)
     start_times = swift.GetStartTimes(observation_list)
     
     rows = []

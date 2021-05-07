@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 from astropy.io import fits
 
-import auxil as aux
+import fluxquery.auxil as aux
 
 class SWIFT:
     def __init__(self):

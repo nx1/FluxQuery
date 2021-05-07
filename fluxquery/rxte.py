@@ -6,7 +6,7 @@ Created on Fri Jun  7 14:41:30 2019
 @author: nk7g14
 """
 import pandas as pd
-import auxil as aux
+import fluxquery.auxil as aux
 import os
 import requests
 

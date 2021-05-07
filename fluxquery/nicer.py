@@ -38,7 +38,7 @@ import matplotlib.pyplot as plt
 from astropy.io import fits
 from astropy.time import Time
 
-import auxil as aux
+import fluxquery.auxil as aux
 
 
 class NICER:

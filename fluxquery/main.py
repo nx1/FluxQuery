@@ -15,11 +15,11 @@ from collections import OrderedDict
 
 from astropy.coordinates import SkyCoord
 
-import auxil as aux
-import xmm
-import swift
-import nicer
-import rxte
+import fluxquery.auxil as aux
+import fluxquery.xmm as xmm
+import fluxquery.swift as swift
+import fluxquery.nicer as nicer
+import fluxquery.rxte as rxte
 
 class Source(xmm.XMM, swift.SWIFT, nicer.NICER, rxte.RXTE):
     def __init__(self, SOURCE_NAME):
